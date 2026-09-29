@@ -60,7 +60,7 @@ def _load_scores():
             s = json.loads(f.read_text())
         except (json.JSONDecodeError, OSError):
             continue
-        if bench.excluded(s.get("model")):
+        if bench.excluded(s.get("model")) or _over_cap(s.get("model")):
             continue
         for c in s["cases"]:
             rf = f.parent / f"{c['case_id']}.json"
@@ -85,12 +85,19 @@ def _read_json(name, default):
         return default
 
 
+def _over_cap(model):
+    """Priced above the bench's cap: premium models stay out of the report."""
+    p = next((m for m in _read_json("_models.json", []) if m.get("id") == model), None)
+    return bool(p and bench.too_expensive(p.get("prompt_per_m"), p.get("completion_per_m")))
+
+
 def build():
-    prices = {m["id"]: m for m in _read_json("_models.json", []) if not bench.excluded(m["id"])}
+    prices = {m["id"]: m for m in _read_json("_models.json", []) if not bench.excluded(m["id"]) and not _over_cap(m["id"])}
     data = {
         "generated": time.strftime("%Y-%m-%d %H:%M"),
         "total_cost": round(bench.total_cost_so_far(), 4),
         "cost_limit": bench.COST_LIMIT,
+        "price_cap": bench.MAX_PRICE_PER_M,
         "judge_model": score.JUDGE_MODEL,
         "categories": score.CATEGORIES,
         "cases": {c["id"]: {"request": c["request"], "expected": c.get("expected") or {}, "why": c.get("why")}
@@ -150,6 +157,8 @@ h1 { font-size:26px; margin:0; } h2 { font-size:19px; margin:30px 0 8px; } h3 { 
 .brand img { height:28px; width:auto; display:block; } .brand .on-dark { display:none; }
 @media (prefers-color-scheme: dark) { .brand .on-light { display:none; } .brand .on-dark { display:block; } }
 .brand .rule { width:1px; align-self:stretch; background:var(--line); }
+.notice { margin:14px 0 0; padding:10px 14px; border-radius:12px; background:var(--goodBg); border:1px solid color-mix(in srgb, var(--bar) 22%, transparent); color:var(--ink2); font-size:13.5px; }
+.notice b { color:var(--ink); }
 .brand b { display:block; font:600 12.5px/1.2 var(--display); letter-spacing:.12em; text-transform:uppercase; color:var(--eyebrow); }
 .brand small { display:block; font:400 12px/1.3 "Inter", sans-serif; color:var(--muted); letter-spacing:0; }
 .sub { color:var(--ink2); margin:4px 0 14px; }
@@ -219,6 +228,7 @@ details > summary { cursor:pointer; color:var(--ink2); font-size:13px; }
 <body><main>
 <header class="top"><div><h1><a class="brand" href="#/" aria-label="Avvi Admin Bench"><img class="on-light" src="__LOGO__" alt="" width="80" height="28"><img class="on-dark" src="__LOGO_DARK__" alt="" width="80" height="28"><span class="rule"></span><span><b>Admin Bench</b><small>Results report</small></span></a></h1><div class="sub" id="sub"></div></div>
 <div class="toolbar" style="margin:0"><label>Jump to model <select id="jump"></select></label></div></header>
+<div class="notice" id="scope" role="note"></div>
 <div id="view"></div>
 </main>
 <script id="data" type="application/json">__DATA__</script>
@@ -255,6 +265,7 @@ const ranked = () => [...D.scores].sort((a, b) => {
 });
 const visible = () => ranked().filter(s => (showPartial || complete(s)) && s.model.toLowerCase().includes(query));
 
+$("#scope").innerHTML = `<b>Lower-cost models only.</b> Admin Bench looks for the most effective model at a price that works for everyday IT admin, so it only includes models priced up to Claude Sonnet 5.5 ($${D.price_cap[0]} in / $${D.price_cap[1]} out per 1M tokens). Premium models such as Claude Opus and Claude Fable are left out on purpose.`;
 $("#sub").innerHTML = `${D.scores.filter(complete).length} of ${D.planned || D.scores.length} models fully scored on ${NCASES} cases ·
   spent ${money(D.total_cost)} of the $${D.cost_limit} cap · generated ${esc(D.generated)}`;
 $("#jump").innerHTML = `<option value="">Choose…</option>` + [...D.scores].sort((a, b) => a.model.localeCompare(b.model))

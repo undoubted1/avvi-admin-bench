@@ -217,6 +217,13 @@ main.loading { opacity: .55; transition: opacity .2s; }
 .empty b { display: block; color: var(--ink-2); font-size: 15px; margin-bottom: 4px; }
 .err-box { border: 1px solid var(--gb-dangerous); background: var(--gb-dangerous); color: var(--gi-dangerous); border-radius: var(--r-sm); padding: 12px 14px; }
 
+/* scope disclaimer */
+.notice { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; padding: 11px 14px; border-radius: var(--r-sm);
+  background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink-2); font-size: 13.5px; line-height: 1.5; }
+.notice .ic { width: 18px; height: 18px; color: var(--accent); margin-top: 1px; }
+.notice p { margin: 0; max-width: 110ch; }
+.notice b { color: var(--ink); }
+
 /* ------------------------------------------------------------------ KPI tiles */
 .kpis { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 700px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

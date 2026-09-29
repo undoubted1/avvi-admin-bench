@@ -90,9 +90,19 @@ def _grade(c):
     return "error" if c.get("error") else c.get("grade", "fail")
 
 
-def _price_table():
+def _all_prices():
     rows = _load(bench.RESULTS / "_models.json") or []
-    return {m["id"]: m for m in rows if isinstance(m, dict) and "id" in m and not bench.excluded(m["id"])}
+    return {m["id"]: m for m in rows if isinstance(m, dict) and "id" in m}
+
+
+def _hidden(model):
+    """Stealth models, and anything priced above the bench's cap, stay off the site."""
+    p = _all_prices().get(model)
+    return bench.excluded(model) or bool(p and bench.too_expensive(p.get("prompt_per_m"), p.get("completion_per_m")))
+
+
+def _price_table():
+    return {k: v for k, v in _all_prices().items() if not _hidden(k)}
 
 
 def _skipped():
@@ -100,10 +110,10 @@ def _skipped():
 
 
 def _scores():
-    """(file, score) for every scored model that isn't excluded."""
+    """(file, score) for every scored model that isn't hidden."""
     for f in sorted(bench.RESULTS.glob("*/_score.json")):
         s = _load(f)
-        if s and "model" in s and not bench.excluded(s["model"]):
+        if s and "model" in s and not _hidden(s["model"]):
             yield f, s
 
 
@@ -154,6 +164,7 @@ def overview():
         "avg_tokens_per_case": [round(sum(t[i] for t in tpc) / len(tpc)) for i in (0, 1)] if tpc else [20000, 400],
         "total_cost": round(total_cost(), 6),
         "cost_limit": bench.COST_LIMIT,
+        "price_cap": bench.MAX_PRICE_PER_M,
         "categories": CATEGORIES,
         "case_ids": CASE_IDS,
         "cases": [{k: c[k] for k in ("id", "category", "request")} | {"expected_outcome": c["expected"].get("outcome", [])}
@@ -167,7 +178,7 @@ def overview():
 # ---------------------------------------------------------------- one model
 
 def model_detail(model):
-    if bench.excluded(model):
+    if _hidden(model):
         return None
     d = bench.model_dir(model)
     s = _load(d / "_score.json")
@@ -210,7 +221,7 @@ def case_detail(case_id):
 # ---------------------------------------------------------------- one run (transcript + its score)
 
 def run_detail(model, case_id):
-    if bench.excluded(model):
+    if _hidden(model):
         return None
     d = bench.model_dir(model)
     f = d / f"{case_id}.json"
@@ -283,7 +294,7 @@ def monitor():
             errors += bool(r.get("error"))
             cost += r.get("cost") or 0
             last = max(last, f.stat().st_mtime)
-        if not model or bench.excluded(model):
+        if not model or _hidden(model):
             continue
         dirs[model] = {"model": model, "files": len(files), "errors": errors, "cost": round(cost, 6),
                        "last_activity": last or None, "scored": score.exists(),
@@ -322,7 +333,7 @@ def live_runs(limit=300):
     out = []
     for f in files:
         r = _load(f, _live_summary)
-        if r and not bench.excluded(r["model"]):
+        if r and not _hidden(r["model"]):
             out.append(r | {"id": f.stem, "at": f.stat().st_mtime})
     return out
 
@@ -370,6 +381,8 @@ def stream_live(handler, models, case_ids):
             raise bench.BenchError(f"Pick at most {LIVE_MAX_MODELS} models at a time.")
         if any(bench.excluded(m) for m in models):
             raise bench.BenchError("Stealth models are left out of the bench: they're temporary, so their scores can't be compared later.")
+        if any(_hidden(m) for m in models):
+            raise bench.BenchError("Premium models aren't offered here: the bench only runs lower-cost models.")
         if not any(c.strip() for c in case_ids):
             raise bench.BenchError("Pick at least one case.")
         cases = bench.select_cases(",".join(case_ids))
@@ -489,7 +502,7 @@ def route(handler, path, q):
         _json(handler, {"categories": CATEGORIES, "cases": _case_meta()})
     elif path == "/api/status":
         _json(handler, {"key_set": bool(os.environ.get("OPENROUTER_API_KEY")), "total_cost": round(total_cost(), 6),
-                        "cost_limit": bench.COST_LIMIT})
+                        "cost_limit": bench.COST_LIMIT, "price_cap": bench.MAX_PRICE_PER_M})
     elif path == "/api/live-runs":
         _json(handler, live_runs())
     elif path == "/api/live-run":

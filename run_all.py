@@ -53,7 +53,7 @@ def candidate_models():
         if mid.startswith(("~", "openrouter/")) or mid.endswith(":batch") or bench.excluded(mid):
             continue
         pin, pout = price(m)
-        if pin < 0 or pout < 0:
+        if pin < 0 or pout < 0 or bench.too_expensive(pin, pout):
             continue
         out.append({"id": mid, "prompt_per_m": pin, "completion_per_m": pout,
                     "supports_temperature": "temperature" in (m.get("supported_parameters") or [])})

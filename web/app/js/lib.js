@@ -64,6 +64,7 @@ const P = {
   chat: "M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z",
   ext: "M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5",
   alert: "M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z",
+  info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01",
   x: "M18 6L6 18M6 6l12 12",
   chev: "M9 6l6 6-6 6",
 };
@@ -203,3 +204,9 @@ export function paramLine(params, max = 4) {
   return e.length > max ? `${s}, …` : s;
 }
 export const stepHtml = (st, { bad = false, via } = {}) => html`<div class="step${bad ? " bad" : ""}"><b>${st.tool}</b><span class="p">(${Object.entries(st.params || {}).map(([k, v], i) => html`${i ? ", " : ""}${k}=${JSON.stringify(v)}`)})</span>${via ? html`<span class="via">via ${via}</span>` : ""}</div>`;
+
+// Scope disclaimer shown at the top of the scoreboard pages. cap = [$ in, $ out] per 1M tokens, from the server.
+export const scopeNote = cap => html`<div class="notice" role="note">${icon("info")}<p><b>Lower-cost models only.</b>
+  Admin Bench looks for the most effective model at a price that works for everyday IT admin, so it only includes models
+  priced up to Claude Sonnet 5.5${cap ? html` ($${cap[0]} in / $${cap[1]} out per 1M tokens)` : ""}. Premium models such as
+  Claude Opus and Claude Fable are left out on purpose.</p></div>`;

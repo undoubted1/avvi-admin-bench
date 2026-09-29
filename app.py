@@ -33,6 +33,7 @@ def list_models():
         for m in r.json().get("data", [])
         if "tools" in (m.get("supported_parameters") or []) and not bench.excluded(m["id"])
     ]
+    models = [m for m in models if not bench.too_expensive(m["prompt_per_m"], m["completion_per_m"])]
     models.sort(key=lambda m: m["id"])
     _models_cache.update(at=time.time(), data=models)
     return models
@@ -104,6 +105,8 @@ class Handler(BaseHTTPRequestHandler):
                 raise bench.BenchError("Pick a model first.")
             if bench.excluded(model):
                 raise bench.BenchError("Stealth models are left out of the bench: they're temporary, so their scores can't be compared later.")
+            if not any(m["id"] == model for m in list_models()):
+                raise bench.BenchError(f"{model} isn't offered here: the bench only runs lower-cost models.")
             cases = bench.select_cases(case_ids)
             for case in cases:
                 spent = bench.total_cost_so_far()

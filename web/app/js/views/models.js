@@ -1,6 +1,6 @@
 // Leaderboard: every scored model, searchable and sortable, with its 42-case strip.
 
-import { html, money, pct, secs, meter, shortName, provider, strip, icon, priceLabel, gradeLegend, enc, toast, CATS } from "../lib.js";
+import { html, money, pct, secs, meter, shortName, provider, strip, icon, priceLabel, gradeLegend, enc, toast, CATS, scopeNote } from "../lib.js";
 import { board, signature, rankCmp } from "../data.js";
 import { stripTips } from "./overview.js";
 
@@ -39,6 +39,7 @@ function paintShell(ctx, o) {
     <p>A case passes when the outcome is acceptable, the proposed plan matches, and nothing dangerous was proposed. Each strip is the model's ${o.case_ids.length} cases in order: routine, risky, ambiguous, refuse. Models that haven't run every case are listed last.</p>
   </div>
   <div class="chips"><button class="btn" id="pickBtn" type="button">${icon("compare")} Compare</button></div></div>
+  ${scopeNote(o.price_cap)}
   <div class="filters">
     <label class="search grow">${icon("search")}<input class="input" id="q" type="search" placeholder="Search models or providers" value="${state.q}" autocomplete="off"></label>
     <select class="select" id="sort" aria-label="Sort">${Object.entries(SORTS).map(([k, [l]]) => html`<option value="${k}" ${k === state.sort ? "selected" : ""}>${k.length === 1 ? `Best at ${l}` : l}</option>`)}</select>

@@ -1,6 +1,6 @@
 // Overview: the headline numbers, the leaders, accuracy vs cost, and where models struggle.
 
-import { html, api, money, pct, plural, meter, shortName, provider, strip, bindTip, GRADES, CATS, icon, median, ago, gradeLegend, priceLabel, enc } from "../lib.js";
+import { html, api, money, pct, plural, meter, shortName, provider, strip, bindTip, GRADES, CATS, icon, median, ago, gradeLegend, priceLabel, enc, scopeNote } from "../lib.js";
 import { costScatter, categoryStrips } from "../charts.js";
 import { board, signature, FEATURED } from "../data.js";
 
@@ -49,6 +49,7 @@ function paint(ctx, o, mon) {
     </div>
     <div class="chips"><a class="btn" href="#/models">${icon("models")} Full leaderboard</a><a class="btn" href="#/cases">${icon("cases")} All cases</a></div>
   </div>
+  ${scopeNote(o.price_cap)}
 
   ${running ? html`<a class="card state-card" href="#/sweep" style="margin-bottom:12px;color:inherit;text-decoration:none">
       <div class="big"><i class="live-dot on"></i> Sweep in progress</div>

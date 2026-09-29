@@ -26,7 +26,9 @@ Nothing in this repo can change a real tenant. There is no Microsoft connection,
 3. Save the transcript to `results/<model>/<case>.json`.
 4. Score it (below). Repeat for each model, through [OpenRouter](https://openrouter.ai).
 
-OpenRouter's `stealth/` models are left out of the sweep, the scoreboard and live runs (`bench.EXCLUDED_PREFIXES`). They are free for a limited time and then withdrawn, so their scores can't be rerun or compared later.
+The bench compares **lower-cost models**: it looks for the most effective model at a price that works for everyday IT admin. Models priced above Claude Sonnet 5.5 ($2 in / $10 out per 1M tokens, `bench.MAX_PRICE_PER_M`), such as Claude Opus and Claude Fable, are left out of the sweep, the scoreboard and live runs.
+
+OpenRouter's `stealth/` models are left out too (`bench.EXCLUDED_PREFIXES`). They are free for a limited time and then withdrawn, so their scores can't be rerun or compared later.
 
 ## Scoring
 

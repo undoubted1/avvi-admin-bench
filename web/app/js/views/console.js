@@ -2,7 +2,7 @@
 // Writes are recorded, never executed. Each live run is saved to its own history, so the
 // sweep's saved results are never overwritten.
 
-import { html, api, money, pct, secs, icon, md, paramLine, shortName, provider, priceLabel, toast, ago, gradePill, meter, CATS, GRADES, GRADE_CODE, enc } from "../lib.js";
+import { html, api, money, pct, secs, icon, md, paramLine, shortName, provider, priceLabel, toast, ago, gradePill, meter, CATS, GRADES, GRADE_CODE, enc, scopeNote } from "../lib.js";
 
 const LS = "liveModels";
 const state = {
@@ -30,6 +30,7 @@ export async function render(ctx) {
     ${status && !status.key_set ? html`<div class="err-box" style="margin-top:10px">Live runs are unavailable on this server right now.</div>` : ""}
     ${status ? html`<div style="max-width:420px;margin-top:10px"><div class="small muted" style="margin-bottom:4px">${money(status.total_cost)} of the $${status.cost_limit} budget spent · live runs count toward it</div>${meter(status.total_cost, status.cost_limit, { label: false })}</div>` : ""}
   </div></div>
+  ${scopeNote(status?.price_cap)}
 
   <div class="console-grid">
     <div class="picker">

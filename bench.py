@@ -47,6 +47,15 @@ def excluded(model):
     return str(model or "").startswith(EXCLUDED_PREFIXES)
 
 
+# The bench compares lower-cost models: anything priced above Claude Sonnet 5.5 ($ per 1M prompt, completion
+# tokens) is left out of the sweep, the scoreboard and live runs, so premium models like Opus and Fable never run.
+MAX_PRICE_PER_M = (2.0, 10.0)
+
+
+def too_expensive(prompt_per_m, completion_per_m):
+    return (prompt_per_m or 0) > MAX_PRICE_PER_M[0] or (completion_per_m or 0) > MAX_PRICE_PER_M[1]
+
+
 def headers():
     key = os.environ.get("OPENROUTER_API_KEY")
     if not key:
