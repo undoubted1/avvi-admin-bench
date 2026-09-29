@@ -1,8 +1,9 @@
 """Run every case for many models, cheapest first, then score and rebuild the report.
 
-python run_all.py [--first openai/gpt-6-luna] [--only openai/gpt-6-luna] [--workers 6]
+python run_all.py [--first openai/gpt-6-luna,anthropic/claude-sonnet-5.5] [--only openai/gpt-6-luna] [--workers 6]
 
 Models come from OpenRouter's /models/user (what this key can reach), filtered to tool calling.
+--first models run before the price order: reference models the $40 cap would otherwise never reach.
 Skipped on purpose: ~provider/*-latest aliases and openrouter/* routers (the model behind them can change,
 so scores wouldn't be reproducible) and :batch variants (same model as the non-batch id).
 Stops starting new cases once total cost (runs + judge) reaches bench.COST_LIMIT minus a small margin.
@@ -138,7 +139,8 @@ def _run_cases(model, workers, todo):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--first", default="openai/gpt-6-luna", help="run this model before the price-ordered list")
+    p.add_argument("--first", default="openai/gpt-6-luna,anthropic/claude-sonnet-5.5",
+                   help="comma-separated model ids to run before the price-ordered list")
     p.add_argument("--only", default="", help="comma-separated model ids; run just these")
     p.add_argument("--workers", type=int, default=3, help="cases in flight per model (rate limit is ~20 req/min per model)")
     p.add_argument("--models-at-once", type=int, default=4)
@@ -147,8 +149,9 @@ def main():
     models = candidate_models()
     meta = {m["id"]: m for m in models}
     (bench.RESULTS / "_models.json").write_text(json.dumps(models, indent=2))
+    first = [x.strip() for x in a.first.split(",") if x.strip()]
     order = [x.strip() for x in a.only.split(",") if x.strip()] or \
-        ([a.first] if a.first else []) + [m["id"] for m in models if m["id"] != a.first]
+        first + [m["id"] for m in models if m["id"] not in first]
     skipped = load_skipped()
     log(f"Plan: {len(order)} models, spent so far ${bench.total_cost_so_far():.2f} of ${bench.COST_LIMIT:.0f}")
 
