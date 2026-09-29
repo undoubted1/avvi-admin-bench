@@ -24,7 +24,7 @@ const niceLog = v => {
 
 // ------------------------------------------------------------------ accuracy vs cost scatter
 // x: average cost per case (log), free models in their own band; y: pass rate.
-// Emphasis form: the cost/accuracy frontier is blue, everything else recedes to gray.
+// Emphasis form: the cost/accuracy frontier is the accent violet, everything else recedes to gray.
 export function costScatter(el, models, { onPick, highlight } = {}) {
   const pts = models.filter(m => m.cases_run > 0).map(m => ({ m, x: m.cost / m.cases_run, y: m.pass_rate }));
   if (!pts.length) { el.innerHTML = `<div class="empty">No scored models yet.</div>`; return () => {}; }
@@ -63,11 +63,12 @@ export function costScatter(el, models, { onPick, highlight } = {}) {
     // Gray dots first, frontier dots on top.
     const order = [...pts].sort((a, b) => onF.has(a.m.model) - onF.has(b.m.model));
     for (const p of order) g.push(`<circle class="pt${onF.has(p.m.model) ? " em" : ""}${p.m.model === highlight ? " hl" : ""}" cx="${p.px.toFixed(1)}" cy="${p.py.toFixed(1)}" r="${onF.has(p.m.model) ? 5.5 : 4.5}"/>`);
-    // Label only the leader (selective labelling).
+    // Label only the leader and the highlighted model (selective labelling).
     const top = [...pts].sort((a, b) => b.y - a.y || a.x - b.x)[0];
-    if (top) {
-      const anchor = top.px > W * 0.7 ? "end" : "start", dx = anchor === "end" ? -9 : 9;
-      g.push(`<text class="dlabel" x="${top.px + dx}" y="${top.py - 9}" text-anchor="${anchor}">${esc(shortName(top.m.model))}</text>`);
+    for (const p of new Set([top, pts.find(q => q.m.model === highlight)])) {
+      if (!p) continue;
+      const anchor = p.px > W * 0.7 ? "end" : "start", dx = anchor === "end" ? -9 : 9;
+      g.push(`<text class="dlabel" x="${p.px + dx}" y="${p.py - 9}" text-anchor="${anchor}">${esc(shortName(p.m.model))}</text>`);
     }
     g.push(`<circle class="xhair-ring" r="9" fill="none" stroke="var(--ink)" stroke-width="2" visibility="hidden"/>`);
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Pass rate against average cost per case for ${pts.length} models">${g.join("")}</svg>`;
@@ -100,7 +101,7 @@ export function costScatter(el, models, { onPick, highlight } = {}) {
 
 // ------------------------------------------------------------------ distribution strip per category
 // One row per category: every model is a gray dot at its pass rate, the median is a black tick,
-// and one emphasized model (the leader, or the model being viewed) is blue.
+// and one emphasized model (the leader, or the model being viewed) is the accent violet.
 export function categoryStrips(el, models, { emphasize, onPick } = {}) {
   const rows = Object.keys(CATS).map(k => ({
     k, pts: models.filter(m => m.by_category?.[k]?.total).map(m => ({ m, v: 100 * m.by_category[k].passed / m.by_category[k].total })),

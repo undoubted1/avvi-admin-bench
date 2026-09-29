@@ -77,6 +77,7 @@ export function setTitle(title, sub = "", { back } = {}) {
   document.title = title === "Admin Bench" ? "Avvi Admin Bench" : `${title} · Avvi Admin Bench`;
   const b = $("#backBtn");
   b.hidden = !back;
+  $("#topMark").hidden = !!back;
   b.onclick = () => (history.length > 1 ? history.back() : (location.hash = back));
 }
 

@@ -2,7 +2,7 @@
 
 import { html, api, money, pct, plural, meter, shortName, provider, strip, bindTip, GRADES, CATS, icon, median, ago, gradeLegend, priceLabel, enc } from "../lib.js";
 import { costScatter, categoryStrips } from "../charts.js";
-import { board, signature } from "../data.js";
+import { board, signature, FEATURED } from "../data.js";
 
 export async function render(ctx) {
   ctx.setTitle("Admin Bench", "Model scoreboard");
@@ -22,6 +22,10 @@ export async function render(ctx) {
 function paint(ctx, o, mon) {
   const { ranked, perCase } = o;
   const leader = o.full[0];
+  // Models tied for first; the headline names the featured model when it is one of them.
+  const tied = leader ? o.full.filter(m => m.pass_rate === leader.pass_rate && m.dangerous_misses === leader.dangerous_misses) : [];
+  const headline = tied.find(m => m.model === FEATURED) || leader;
+  const tiedWith = tied.filter(m => m !== headline);
   const complete = ranked.filter(m => m.cases_run === o.case_ids.length);
   const dangerModels = ranked.filter(m => m.dangerous_misses > 0);
   const totalDanger = ranked.reduce((s, m) => s + m.dangerous_misses, 0);
@@ -36,10 +40,10 @@ function paint(ctx, o, mon) {
   const maxD = dangerBoard[0]?.dangerous_misses || 1;
 
   ctx.main.innerHTML = String(html`
-  <div class="head">
+  <div class="head hero">
     <div class="grow">
       <div class="eyebrow">Avvi Admin Bench ${running ? html`<span class="pill accent"><i class="live-dot on"></i> Sweep running</span>` : ""}</div>
-      <h1>Which AI models can be trusted with IT admin?</h1>
+      <h1>Which AI models can be <span class="hl">trusted with IT admin?</span></h1>
       <p>${o.case_ids.length} real requests from an office manager at a fictional 12-person dental practice. Each model has to propose the right change for the right person, or ask or refuse when it should. Nothing is ever executed.</p>
       <div class="meta-line"><span>${plural(ranked.length, "model")} scored</span>${o.planned ? html`·<span>${o.planned} planned</span>` : ""}·<span>updated ${ago(Math.max(0, ...ranked.map(m => m.scored_at || 0)))}</span></div>
     </div>
@@ -56,11 +60,12 @@ function paint(ctx, o, mon) {
 
   ${!ranked.length ? html`<div class="card empty"><b>No scored models yet.</b>Scores appear here as soon as the first model finishes all ${o.case_ids.length} cases.</div>` : html`
   <div class="kpis six">
-    <a class="tile hero" href="#/model/${enc(leader.model)}">
-      <span class="k">Top pass rate</span>
-      <span class="v">${pct(leader.pass_rate, 1)}</span>
-      <span class="n"><b style="color:var(--ink)">${shortName(leader.model)}</b> · ${leader.passed}/${leader.cases_run} cases · ${leader.dangerous_misses} dangerous</span>
-      ${meter(leader.pass_rate, 100, { label: false })}
+    <a class="tile hero" href="#/model/${enc(headline.model)}">
+      <span class="k">${tiedWith.length ? "Top pass rate · tied for first" : "Top pass rate"}</span>
+      <span class="v">${pct(headline.pass_rate, 1)}</span>
+      <span class="n"><b>${shortName(headline.model)}</b> · ${headline.passed}/${headline.cases_run} cases · ${headline.dangerous_misses} dangerous</span>
+      ${tiedWith.length ? html`<span class="n">Tied with ${tiedWith.map(m => shortName(m.model)).join(", ")}</span>` : ""}
+      ${meter(headline.pass_rate, 100, { label: false })}
     </a>
     <div class="tile"><span class="k">Models scored</span><span class="v">${ranked.length}${o.planned ? html`<small>/ ${o.planned}</small>` : ""}</span><span class="n">${complete.length} ran every case</span></div>
     <div class="tile"><span class="k">Median pass rate</span><span class="v">${pct(med)}</span><span class="n">${plural(o.full.length, "complete run")}</span></div>
@@ -74,7 +79,7 @@ function paint(ctx, o, mon) {
 
   <div class="grid three" style="margin-top:12px">
     <div class="card span-2">
-      <div class="card-h"><div><h2>Accuracy vs cost</h2><p>Each dot is a model that ran every case. Blue dots are the frontier: no cheaper model scores higher.</p></div></div>
+      <div class="card-h"><div><h2>Accuracy vs cost</h2><p>Each dot is a model that ran every case. Violet dots are the frontier: no cheaper model scores higher.</p></div></div>
       <div class="chart" id="scatter"></div>
     </div>
     <div class="card flush">
@@ -92,7 +97,7 @@ function paint(ctx, o, mon) {
 
   <div class="grid two" style="margin-top:12px">
     <div class="card">
-      <div class="card-h"><div><h2>Pass rate by category</h2><p>Gray dots are models, the black tick is the median${leader ? html`, blue is <b>${shortName(leader.model)}</b>` : ""}.</p></div></div>
+      <div class="card-h"><div><h2>Pass rate by category</h2><p>Gray dots are models, the black tick is the median${headline ? html`, violet is <b>${shortName(headline.model)}</b>` : ""}.</p></div></div>
       <div class="chart" id="catStrips"></div>
     </div>
     <div class="card">
@@ -126,8 +131,8 @@ function paint(ctx, o, mon) {
   `);
 
   if (!ranked.length) return;
-  ctx.onCleanup(costScatter(ctx.main.querySelector("#scatter"), o.full, { onPick: m => ctx.go(`#/model/${enc(m)}`) }));
-  ctx.onCleanup(categoryStrips(ctx.main.querySelector("#catStrips"), o.full, { emphasize: leader?.model, onPick: m => ctx.go(`#/model/${enc(m)}`) }));
+  ctx.onCleanup(costScatter(ctx.main.querySelector("#scatter"), o.full, { highlight: headline?.model, onPick: m => ctx.go(`#/model/${enc(m)}`) }));
+  ctx.onCleanup(categoryStrips(ctx.main.querySelector("#catStrips"), o.full, { emphasize: headline?.model, onPick: m => ctx.go(`#/model/${enc(m)}`) }));
   stripTips(ctx.main.querySelector("#leaders"), o, ctx);
 }
 

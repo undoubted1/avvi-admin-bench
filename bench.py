@@ -38,6 +38,15 @@ class BenchError(Exception):
     pass
 
 
+# Kept out of the sweep, the scoreboard and live runs. OpenRouter's stealth/ models are anonymous and free
+# for a limited time before they're withdrawn, so their scores can't be rerun or compared later.
+EXCLUDED_PREFIXES = ("stealth/",)
+
+
+def excluded(model):
+    return str(model or "").startswith(EXCLUDED_PREFIXES)
+
+
 def headers():
     key = os.environ.get("OPENROUTER_API_KEY")
     if not key:

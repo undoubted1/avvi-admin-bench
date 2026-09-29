@@ -92,15 +92,19 @@ def _grade(c):
 
 def _price_table():
     rows = _load(bench.RESULTS / "_models.json") or []
-    return {m["id"]: m for m in rows if isinstance(m, dict) and "id" in m}
+    return {m["id"]: m for m in rows if isinstance(m, dict) and "id" in m and not bench.excluded(m["id"])}
 
 
 def _skipped():
     return _load(bench.RESULTS / "_skipped.json") or {}
 
 
-def _score_files():
-    return sorted(bench.RESULTS.glob("*/_score.json"))
+def _scores():
+    """(file, score) for every scored model that isn't excluded."""
+    for f in sorted(bench.RESULTS.glob("*/_score.json")):
+        s = _load(f)
+        if s and "model" in s and not bench.excluded(s["model"]):
+            yield f, s
 
 
 def _case_meta():
@@ -142,10 +146,8 @@ def _model_row(s, prices, mtime):
 def overview():
     prices = _price_table()
     models = []
-    for f in _score_files():
-        s = _load(f)
-        if s and "model" in s:
-            models.append(_model_row(s, prices, f.stat().st_mtime))
+    for f, s in _scores():
+        models.append(_model_row(s, prices, f.stat().st_mtime))
     tpc = [m["tokens_per_case"] for m in models if m["tokens_per_case"]]
     return {
         "generated": time.time(),
@@ -165,6 +167,8 @@ def overview():
 # ---------------------------------------------------------------- one model
 
 def model_detail(model):
+    if bench.excluded(model):
+        return None
     d = bench.model_dir(model)
     s = _load(d / "_score.json")
     runs = {}
@@ -187,9 +191,8 @@ def case_detail(case_id):
     if not meta:
         return None
     runs = []
-    for f in _score_files():
-        s = _load(f)
-        c = next((x for x in (s or {}).get("cases", []) if x.get("case_id") == case_id), None)
+    for _, s in _scores():
+        c = next((x for x in s.get("cases", []) if x.get("case_id") == case_id), None)
         if not c:
             continue
         text = c.get("final_text") or ""
@@ -207,6 +210,8 @@ def case_detail(case_id):
 # ---------------------------------------------------------------- one run (transcript + its score)
 
 def run_detail(model, case_id):
+    if bench.excluded(model):
+        return None
     d = bench.model_dir(model)
     f = d / f"{case_id}.json"
     if f.resolve().parent.parent != bench.RESULTS.resolve() or case_id not in CASE_IDS:
@@ -278,7 +283,7 @@ def monitor():
             errors += bool(r.get("error"))
             cost += r.get("cost") or 0
             last = max(last, f.stat().st_mtime)
-        if not model:
+        if not model or bench.excluded(model):
             continue
         dirs[model] = {"model": model, "files": len(files), "errors": errors, "cost": round(cost, 6),
                        "last_activity": last or None, "scored": score.exists(),
@@ -317,7 +322,7 @@ def live_runs(limit=300):
     out = []
     for f in files:
         r = _load(f, _live_summary)
-        if r:
+        if r and not bench.excluded(r["model"]):
             out.append(r | {"id": f.stem, "at": f.stat().st_mtime})
     return out
 
@@ -363,6 +368,8 @@ def stream_live(handler, models, case_ids):
             raise bench.BenchError("Pick at least one model.")
         if len(models) > LIVE_MAX_MODELS:
             raise bench.BenchError(f"Pick at most {LIVE_MAX_MODELS} models at a time.")
+        if any(bench.excluded(m) for m in models):
+            raise bench.BenchError("Stealth models are left out of the bench: they're temporary, so their scores can't be compared later.")
         if not any(c.strip() for c in case_ids):
             raise bench.BenchError("Pick at least one case.")
         cases = bench.select_cases(",".join(case_ids))
@@ -435,11 +442,24 @@ def _static(handler, rel):
     f = (APP_DIR / rel).resolve()
     if APP_DIR.resolve() not in f.parents or not f.is_file():
         return _json(handler, {"error": "not found"}, 404)
-    ctype = {".js": "text/javascript", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml"}.get(
-        f.suffix, mimetypes.guess_type(f.name)[0] or "application/octet-stream")
+    ctype = {".js": "text/javascript", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml",
+             ".woff2": "font/woff2", ".ico": "image/x-icon"}.get(f.suffix, mimetypes.guess_type(f.name)[0] or "application/octet-stream")
     if ctype.startswith("text/") or ctype.endswith(("json", "javascript", "svg+xml")):
         ctype += "; charset=utf-8"
-    _send(handler, 200, f.read_bytes(), ctype)
+    body = f.read_bytes()
+    if rel == "index.html":
+        body = body.replace(b"__ORIGIN__", _origin(handler).encode())
+    # Font files never change under the same name; everything else revalidates so a deploy shows at once.
+    _send(handler, 200, body, ctype, "public, max-age=2592000" if f.suffix == ".woff2" else "no-cache")
+
+
+def _origin(handler):
+    """This site's own origin, for the share-card URL (link previews need an absolute image URL)."""
+    host = handler.headers.get("X-Forwarded-Host") or handler.headers.get("Host") or ""
+    proto = handler.headers.get("X-Forwarded-Proto") or "http"
+    if not re.fullmatch(r"[A-Za-z0-9.\-]+(:\d+)?", host) or proto not in ("http", "https"):
+        return ""
+    return f"{proto}://{host}"
 
 
 def route(handler, path, q):
@@ -450,6 +470,8 @@ def route(handler, path, q):
         _static(handler, path[len("/app/"):])
     elif path == "/manifest.webmanifest":
         _static(handler, "manifest.webmanifest")
+    elif path == "/favicon.ico":
+        _static(handler, "favicon.ico")
     elif path == "/api/overview":
         _json(handler, overview())
     elif path == "/api/monitor":

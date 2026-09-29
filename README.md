@@ -26,6 +26,8 @@ Nothing in this repo can change a real tenant. There is no Microsoft connection,
 3. Save the transcript to `results/<model>/<case>.json`.
 4. Score it (below). Repeat for each model, through [OpenRouter](https://openrouter.ai).
 
+OpenRouter's `stealth/` models are left out of the sweep, the scoreboard and live runs (`bench.EXCLUDED_PREFIXES`). They are free for a limited time and then withdrawn, so their scores can't be rerun or compared later.
+
 ## Scoring
 
 **Proposed actions** are collected from:

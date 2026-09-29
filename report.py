@@ -8,6 +8,7 @@ Three views, linked by URL hash so the back button works:
   #/case/<id>        one case: what was expected, and how every model handled it
 """
 
+import base64
 import json
 import time
 
@@ -16,6 +17,7 @@ import mocks
 import score
 
 OUT = bench.RESULTS / "report.html"
+WEB = bench.ROOT / "web" / "app"
 RESULT_CHARS = 400  # mock read results are trimmed in the transcript to keep the page small
 
 
@@ -58,6 +60,8 @@ def _load_scores():
             s = json.loads(f.read_text())
         except (json.JSONDecodeError, OSError):
             continue
+        if bench.excluded(s.get("model")):
+            continue
         for c in s["cases"]:
             rf = f.parent / f"{c['case_id']}.json"
             try:
@@ -82,7 +86,7 @@ def _read_json(name, default):
 
 
 def build():
-    prices = {m["id"]: m for m in _read_json("_models.json", [])}
+    prices = {m["id"]: m for m in _read_json("_models.json", []) if not bench.excluded(m["id"])}
     data = {
         "generated": time.strftime("%Y-%m-%d %H:%M"),
         "total_cost": round(bench.total_cost_so_far(), 4),
@@ -99,38 +103,68 @@ def build():
         "scores": _load_scores(),
     }
     payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
-    OUT.write_text(TEMPLATE.replace("__DATA__", payload))
+    OUT.write_text(_brand(TEMPLATE).replace("__DATA__", payload))
     return OUT
+
+
+def _data_uri(path, mime):
+    return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode()}"
+
+
+def _brand(page):
+    """Inline the dashboard's Avvi fonts, logo and icon, so the report matches it with no network."""
+    fonts = "".join(
+        f'@font-face {{ font-family:"{name}"; font-weight:{weight}; font-display:swap; '
+        f'src:url({_data_uri(WEB / "fonts" / file, "font/woff2")}) format("woff2"); }}\n'
+        for name, weight, file in [("Inter", "400 700", "inter-latin.woff2"),
+                                   ("Space Grotesk", "500 700", "space-grotesk-latin.woff2"),
+                                   ("JetBrains Mono", "400 700", "jetbrains-mono-latin.woff2")])
+    return (page.replace("__FONTS__", fonts)
+            .replace("__ICON__", _data_uri(WEB / "icon-96.png", "image/png"))
+            .replace("__LOGO__", _data_uri(WEB / "brand" / "avvi-logo.png", "image/png"))
+            .replace("__LOGO_DARK__", _data_uri(WEB / "brand" / "avvi-logo-dark.png", "image/png")))
 
 
 TEMPLATE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Avvi Admin Bench: results</title>
+<link rel="icon" href="__ICON__" type="image/png">
 <style>
-:root { --bg:#fcfcfb; --card:#ffffff; --ink:#0b0b0b; --ink2:#52514e; --muted:#76746f; --line:#e6e4df; --track:#f0efec;
-  --bar:#2a78d6; --good:#0ca30c; --goodInk:#0a7a0a; --warn:#fab219; --warnInk:#8a5a00; --crit:#d03b3b; --critInk:#b42323;
-  --goodBg:#eaf7ea; --warnBg:#fff6e0; --critBg:#fdecec; --code:#f4f3f0; --link:#1c5cab; }
-@media (prefers-color-scheme: dark) { :root { --bg:#141413; --card:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#9a998f;
-  --line:#383835; --track:#2a2a28; --bar:#3987e5; --goodInk:#5fd35f; --warnInk:#fab219; --critInk:#ff8a8a;
-  --goodBg:#16301a; --warnBg:#33290f; --critBg:#3a1a1a; --code:#23231f; --link:#86b6ef; } }
+__FONTS__
+/* Avvi brand, same tokens as the dashboard (web/app/app.css): pass is violet, fail amber, dangerous red. */
+:root { --bg:#f7f6fb; --card:#ffffff; --ink:#15121c; --ink2:#474157; --muted:#6b6580; --line:#e9e8ee; --track:#f0eef6;
+  --bar:#6d28d9; --good:#6d28d9; --goodInk:#5b21b6; --warn:#eda100; --warnInk:#7a4f00; --crit:#b42323; --critInk:#b42323;
+  --goodBg:#f0e9ff; --warnBg:#fdf1d6; --critBg:#fbe7e7; --code:#f6f4fb; --link:#5b21b6; --eyebrow:#3300c8;
+  --display:"Space Grotesk", "Inter", system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0e0a18; --card:#171326; --ink:#ffffff; --ink2:#d7d1e6; --muted:#a39cba;
+  --line:#2c2640; --track:#241e36; --bar:#8b5cf6; --good:#8b5cf6; --goodInk:#c4b5fd; --warn:#c98500; --warnInk:#fab219;
+  --crit:#d03b3b; --critInk:#ff8a8a; --goodBg:#2a1f4d; --warnBg:#33290f; --critBg:#3a1a1f; --code:#1f1a30; --link:#c4b5fd; --eyebrow:#b9a4ff; } }
 * { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+body { margin:0; background:radial-gradient(70% 45% at 84% 0%, color-mix(in srgb, var(--bar) 12%, transparent), transparent 60%) no-repeat 0 0 / 100% 700px, var(--bg);
+  color:var(--ink); font:15px/1.5 "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing:antialiased; }
 main { max-width:1240px; margin:0 auto; padding:24px 22px 60px; }
 a { color:var(--link); text-decoration:none; } a:hover { text-decoration:underline; }
+h1, h2, h3 { font-family:var(--display); letter-spacing:-.015em; }
 h1 { font-size:26px; margin:0; } h2 { font-size:19px; margin:30px 0 8px; } h3 { font-size:15px; margin:0; }
+.brand { display:flex; align-items:center; gap:12px; color:inherit; } .brand:hover { text-decoration:none; }
+.brand img { height:28px; width:auto; display:block; } .brand .on-dark { display:none; }
+@media (prefers-color-scheme: dark) { .brand .on-light { display:none; } .brand .on-dark { display:block; } }
+.brand .rule { width:1px; align-self:stretch; background:var(--line); }
+.brand b { display:block; font:600 12.5px/1.2 var(--display); letter-spacing:.12em; text-transform:uppercase; color:var(--eyebrow); }
+.brand small { display:block; font:400 12px/1.3 "Inter", sans-serif; color:var(--muted); letter-spacing:0; }
 .sub { color:var(--ink2); margin:4px 0 14px; }
 header.top { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--line); padding-bottom:12px; }
 nav.crumbs { font-size:14px; color:var(--ink2); margin:14px 0 4px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 16px; box-shadow:0 1px 2px rgba(40, 20, 70, .05); }
 .tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(165px, 1fr)); gap:12px; margin:12px 0; }
-.tile .k { color:var(--ink2); font-size:13px; } .tile .v { font-size:28px; font-weight:650; font-variant-numeric:tabular-nums; line-height:1.25; }
+.tile .k { color:var(--ink2); font-size:13px; } .tile .v { font-family:var(--display); font-size:28px; font-weight:700; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1.25; }
 .tile .n { color:var(--muted); font-size:12px; }
 table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
 th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
 th { font-size:12px; color:var(--ink2); font-weight:600; user-select:none; vertical-align:bottom; }
 th.sort { cursor:pointer; } th.num, td.num { text-align:right; }
 tbody tr.pick { cursor:pointer; } tbody tr.pick:hover { background:var(--track); }
-.mono { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; }
+.mono { font-family:var(--mono); font-size:12.5px; }
 .meter { display:flex; align-items:center; gap:8px; min-width:140px; }
 .meter .tr { flex:1; height:8px; background:var(--track); border-radius:4px; overflow:hidden; }
 .meter .fl { height:100%; background:var(--bar); border-radius:0 4px 4px 0; }
@@ -143,15 +177,15 @@ tbody tr.pick { cursor:pointer; } tbody tr.pick:hover { background:var(--track);
 .pill { background:var(--gbg, var(--track)); color:var(--gink, var(--ink2)); }
 .bad { color:var(--critInk); font-weight:650; }
 .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:10px 0; }
-select, button, input { font:inherit; font-size:14px; padding:5px 10px; border:1px solid var(--line); border-radius:7px; background:var(--card); color:var(--ink); }
-button { cursor:pointer; } button.on { background:var(--ink); color:var(--bg); border-color:var(--ink); } button:disabled { opacity:.4; cursor:default; }
+select, button, input { font:inherit; font-size:14px; padding:5px 10px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--ink); }
+button { cursor:pointer; } button.on { background:var(--bar); color:#fff; border-color:var(--bar); } button:disabled { opacity:.4; cursor:default; }
 .scroll { overflow-x:auto; }
 /* model x case grid */
 .grid { border-collapse:separate; border-spacing:2px; width:auto; }
 .grid th, .grid td { border:none; padding:0; }
-.grid th.cid { font:10px ui-monospace, monospace; color:var(--ink2); writing-mode:vertical-rl; transform:rotate(180deg); height:34px; text-align:left; padding:2px 0; cursor:pointer; }
+.grid th.cid { font:10px var(--mono); color:var(--ink2); writing-mode:vertical-rl; transform:rotate(180deg); height:34px; text-align:left; padding:2px 0; cursor:pointer; }
 .grid th.cat { font-size:11px; text-align:center; color:var(--ink2); border-bottom:2px solid var(--line); padding-bottom:2px; }
-.grid td.m { font:12px ui-monospace, monospace; padding-right:10px; white-space:nowrap; max-width:290px; overflow:hidden; text-overflow:ellipsis; }
+.grid td.m { font:12px var(--mono); padding-right:10px; white-space:nowrap; max-width:290px; overflow:hidden; text-overflow:ellipsis; }
 .grid td.c { width:18px; height:18px; border-radius:4px; background:var(--gbg); color:var(--gink); font-size:11px; font-weight:700; text-align:center; line-height:18px; cursor:pointer; }
 .grid td.c:hover { outline:2px solid var(--ink); }
 .grid td.gap { width:6px; }
@@ -167,7 +201,7 @@ button { cursor:pointer; } button.on { background:var(--ink); color:var(--bg); b
 .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:10px; }
 @media (max-width:800px) { .grid2 { grid-template-columns:1fr; } .cases .row { grid-template-columns:100px 44px 1fr 14px; } }
 .lab { font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin:8px 0 3px; }
-.step { font-family:ui-monospace, Menlo, monospace; font-size:12.5px; background:var(--code); border-radius:6px; padding:5px 8px; margin:3px 0; word-break:break-word; }
+.step { font-family:var(--mono); font-size:12.5px; background:var(--code); border-radius:6px; padding:5px 8px; margin:3px 0; word-break:break-word; }
 .or { font-size:11px; color:var(--muted); margin:3px 0; }
 .box { margin-top:10px; padding:8px 10px; border-radius:6px; background:var(--track); font-size:14px; }
 .checks { display:flex; gap:14px; flex-wrap:wrap; font-size:13px; margin-top:8px; }
@@ -176,14 +210,14 @@ button { cursor:pointer; } button.on { background:var(--ink); color:var(--bg); b
 .reply { white-space:pre-wrap; font-size:13.5px; background:var(--code); border-radius:6px; padding:8px 10px; }
 .trace { border-left:2px solid var(--line); margin:6px 0 0 6px; padding-left:12px; }
 .ev { margin:6px 0; font-size:13px; } .ev .tag { font-size:11px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); margin-right:6px; }
-.ev.write .tag { color:var(--warnInk); } .ev pre { white-space:pre-wrap; word-break:break-word; font:12px ui-monospace, monospace; background:var(--code); padding:6px 8px; border-radius:6px; margin:3px 0; max-height:220px; overflow:auto; }
+.ev.write .tag { color:var(--warnInk); } .ev pre { white-space:pre-wrap; word-break:break-word; font:12px var(--mono); background:var(--code); padding:6px 8px; border-radius:6px; margin:3px 0; max-height:220px; overflow:auto; }
 .note li { margin:4px 0; color:var(--ink2); }
 .empty { color:var(--muted); padding:8px 0; }
 details > summary { cursor:pointer; color:var(--ink2); font-size:13px; }
 .hard td.req { max-width:520px; }
 </style></head>
 <body><main>
-<header class="top"><div><h1><a href="#/" style="color:inherit">Avvi Admin Bench</a></h1><div class="sub" id="sub"></div></div>
+<header class="top"><div><h1><a class="brand" href="#/" aria-label="Avvi Admin Bench"><img class="on-light" src="__LOGO__" alt="" width="80" height="28"><img class="on-dark" src="__LOGO_DARK__" alt="" width="80" height="28"><span class="rule"></span><span><b>Admin Bench</b><small>Results report</small></span></a></h1><div class="sub" id="sub"></div></div>
 <div class="toolbar" style="margin:0"><label>Jump to model <select id="jump"></select></label></div></header>
 <div id="view"></div>
 </main>

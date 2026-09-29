@@ -31,7 +31,7 @@ def list_models():
             "completion_per_m": float(m.get("pricing", {}).get("completion") or 0) * 1e6,
         }
         for m in r.json().get("data", [])
-        if "tools" in (m.get("supported_parameters") or [])
+        if "tools" in (m.get("supported_parameters") or []) and not bench.excluded(m["id"])
     ]
     models.sort(key=lambda m: m["id"])
     _models_cache.update(at=time.time(), data=models)
@@ -44,6 +44,8 @@ def result_summaries():
         try:
             r = json.loads(f.read_text())
         except (json.JSONDecodeError, OSError):
+            continue
+        if bench.excluded(r.get("model")):
             continue
         out.append({k: r.get(k) for k in ("model", "case_id", "stop_reason", "cost", "duration_s", "error")}
                    | {"tools": [c["tool"] for c in r.get("recorded_calls", [])]})
@@ -100,6 +102,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if not model:
                 raise bench.BenchError("Pick a model first.")
+            if bench.excluded(model):
+                raise bench.BenchError("Stealth models are left out of the bench: they're temporary, so their scores can't be compared later.")
             cases = bench.select_cases(case_ids)
             for case in cases:
                 spent = bench.total_cost_so_far()

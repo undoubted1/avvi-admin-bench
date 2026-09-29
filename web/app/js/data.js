@@ -2,6 +2,9 @@
 
 import { api, median } from "./lib.js";
 
+// Named in the overview headline when it shares the top score; the leaderboard order itself is unchanged.
+export const FEATURED = "anthropic/claude-sonnet-5.5";
+
 // Leaderboard order: pass rate, then fewer dangerous misses, then cheaper.
 export const rankCmp = (a, b) => b.pass_rate - a.pass_rate || a.dangerous_misses - b.dangerous_misses || a.cost - b.cost || a.model.localeCompare(b.model);
 
