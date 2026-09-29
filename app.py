@@ -1,4 +1,6 @@
-"""Local dev app for Avvi Admin Bench. Run: python app.py, then open http://localhost:8000"""
+"""Avvi Admin Bench web app. Run: python app.py, then open http://localhost:8000
+
+The dashboard pages and their data live in dashboard.py; this file keeps the model list and the single-model run stream."""
 
 import json
 import os
@@ -9,9 +11,9 @@ from urllib.parse import parse_qs, urlparse
 import requests
 
 import bench
+import dashboard
 
 HOST, PORT = os.environ.get("HOST", "127.0.0.1"), int(os.environ.get("PORT", 8000))
-INDEX = bench.ROOT / "web" / "index.html"
 _models_cache = {"at": 0, "data": None}
 
 
@@ -38,7 +40,7 @@ def list_models():
 
 def result_summaries():
     out = []
-    for f in sorted(bench.RESULTS.glob("*/*.json")):
+    for f in sorted(bench.RESULTS.glob("*/[A-Z]*.json")):
         try:
             r = json.loads(f.read_text())
         except (json.JSONDecodeError, OSError):
@@ -64,17 +66,9 @@ class Handler(BaseHTTPRequestHandler):
         url = urlparse(self.path)
         q = {k: v[0] for k, v in parse_qs(url.query).items()}
         try:
-            if url.path == "/":
-                body = INDEX.read_bytes()
-                self.send_response(200)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-            elif url.path == "/api/status":
-                self.send_json({"key_set": bool(os.environ.get("OPENROUTER_API_KEY")),
-                                "total_cost": bench.total_cost_so_far(), "cost_limit": bench.COST_LIMIT})
-            elif url.path == "/api/cases":
+            if dashboard.route(self, url.path, q):
+                return
+            if url.path == "/api/cases":
                 self.send_json([{"id": c["id"], "request": c["request"], "expected": c.get("expected"),
                                  "why": c.get("why")} for c in bench.CASES])
             elif url.path == "/api/models":
@@ -122,5 +116,6 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"Avvi Admin Bench dev app: http://localhost:{PORT}  (Ctrl+C to stop)")
+    ThreadingHTTPServer.request_queue_size = 128  # the page loads ~15 modules at once; the default backlog of 5 resets some
+    print(f"Avvi Admin Bench: http://localhost:{PORT}  (Ctrl+C to stop)")
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()

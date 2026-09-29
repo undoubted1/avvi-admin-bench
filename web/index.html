@@ -14,7 +14,8 @@
   .pill { font-size:12px; padding:3px 8px; border-radius:999px; background:#eef2ff; color:var(--blue); }
   .pill.ok { background:#dcfce7; color:var(--green); } .pill.bad { background:#fee2e2; color:var(--red); }
   header .spacer { flex:1; }
-  main { display:grid; grid-template-columns: 340px 1fr; height: calc(100vh - 53px); }
+  main { display:grid; grid-template-columns: 340px minmax(0, 1fr); height: calc(100vh - 53px); }
+  @media (max-width: 900px) { main { display:block; height:auto; } aside { border-right:0; border-bottom:1px solid var(--line); max-height:45vh; } }
   aside { border-right:1px solid var(--line); background:var(--card); overflow:auto; padding:16px; }
   section { overflow:auto; padding:20px; }
   label.h { display:block; font-weight:600; margin:0 0 6px; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
@@ -35,9 +36,15 @@
   .exp { font-size:12px; color:var(--muted); margin-bottom:10px; }
   .ev { border-left:3px solid var(--line); padding:4px 10px; margin:6px 0; font-size:13px; }
   .ev.read { border-color:#94a3b8; } .ev.write { border-color:var(--amber); background:#fffbeb; }
-  .ev.text { border-color:var(--blue); white-space:pre-wrap; } .ev.error { border-color:var(--red); color:var(--red); }
+  .ev.text { border-color:var(--blue); line-height:1.5; } .ev.error { border-color:var(--red); color:var(--red); }
+  .ev.text > :first-child { margin-top:0; } .ev.text > :last-child { margin-bottom:0; }
+  .ev.text > :first-child::before { content:"💬 "; }
+  .ev.text p, .ev.text ol, .ev.text ul, .ev.text table { margin:6px 0; } .ev.text ol, .ev.text ul { padding-left:22px; }
+  .ev.text li { margin:2px 0; } .ev.text .h { font-weight:600; }
+  .ev.text code { font:12px ui-monospace, monospace; background:#f1f5f9; padding:1px 4px; border-radius:4px; }
+  .ev.text table { width:auto; } .ev.text th, .ev.text td { padding:4px 8px; border:1px solid var(--line); }
   .ev .tool { font-family:ui-monospace, monospace; font-weight:600; }
-  details pre, pre { font:12px ui-monospace, monospace; background:#f8fafc; padding:8px; border-radius:6px; overflow:auto; max-height:260px; margin:4px 0; }
+  details pre, pre { font:12px ui-monospace, monospace; background:#f8fafc; padding:8px; border-radius:6px; overflow:auto; max-height:260px; margin:4px 0; white-space:pre-wrap; overflow-wrap:anywhere; }
   .meta { font-size:12px; color:var(--muted); margin-top:8px; }
   table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; }
   th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); font-size:13px; }
@@ -77,6 +84,43 @@
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// Minimal Markdown → HTML for model replies. Everything is escaped before any tags are added.
+const mdInline = s => s.split(/(`[^`\n]+`)/).map((p, i) => i % 2 ? `<code>${esc(p.slice(1, -1))}</code>` :
+  esc(p).replace(/\*\*(.+?)\*\*|__(.+?)__/g, (_, a, b) => `<b>${a ?? b}</b>`)
+    .replace(/(^|[^\w*])([*_])(?=\S)(.+?)(?<=\S)\2(?!\w)/g, "$1<i>$3</i>")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')).join("");
+function md(src) {
+  const out = [], cells = r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+  let para = [], list = null, table = null, code = null;
+  const flush = () => {
+    if (para.length) out.push(`<p>${para.map(mdInline).join("<br>")}</p>`);
+    if (list) out.push(`<${list.tag}${list.start > 1 ? ` start="${list.start}"` : ""}>${list.items.map(i => `<li>${mdInline(i)}</li>`).join("")}</${list.tag}>`);
+    if (table) out.push(`<table><tr>${table[0].map(c => `<th>${mdInline(c)}</th>`).join("")}</tr>${table.slice(1).map(r => `<tr>${r.map(c => `<td>${mdInline(c)}</td>`).join("")}</tr>`).join("")}</table>`);
+    para = []; list = null; table = null;
+  };
+  for (const line of String(src ?? "").split("\n")) {
+    let m;
+    if (code) { if (/^\s*```/.test(line)) { out.push(`<pre>${esc(code.join("\n"))}</pre>`); code = null; } else code.push(line); continue; }
+    if (/^\s*```/.test(line)) { flush(); code = []; }
+    else if (!line.trim()) { if (!list) flush(); }   // blank lines between list items keep one list
+    else if ((m = line.match(/^\s*#{1,6}\s+(.*)/))) { flush(); out.push(`<p class="h">${mdInline(m[1])}</p>`); }
+    else if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) { flush(); out.push("<hr>"); }
+    else if (/^\s*\|.*\|\s*$/.test(line)) {
+      if (!table) { flush(); table = []; }
+      if (!/^[\s|:-]+$/.test(line)) table.push(cells(line));
+    }
+    else if ((m = line.match(/^\s*(?:(\d+)[.)]|[-*+])\s+(.*)/))) {
+      const tag = m[1] ? "ol" : "ul";
+      if (list?.tag !== tag) { flush(); list = {tag, start: +m[1] || 1, items: []}; }
+      list.items.push(m[2]);
+    }
+    else if (list && /^\s/.test(line)) list.items[list.items.length - 1] += " " + line.trim();
+    else { if (list || table) flush(); para.push(line); }
+  }
+  if (code) out.push(`<pre>${esc(code.join("\n"))}</pre>`);
+  flush();
+  return out.join("");
+}
 const CATS = {R:"Routine", K:"Risky", A:"Ambiguous", F:"Refuse / escalate"};
 let CASES = [], MODELS = [];
 
@@ -148,7 +192,7 @@ $("#run").addEventListener("click", () => {
     addEv(card, "read", `🔎 turn ${d.turn} · looked up <span class="tool">${esc(d.tool)}</span>${argsHtml(d.arguments)}<details><summary>mock result</summary><pre>${esc(JSON.stringify(d.result, null, 2))}</pre></details>`); });
   es.addEventListener("write", e => { const d = JSON.parse(e.data);
     addEv(card, "write", `✋ turn ${d.turn} · proposed <span class="tool">${esc(d.tool)}</span> (recorded, NOT executed)<pre>${esc(JSON.stringify(d.arguments, null, 2))}</pre>`); });
-  es.addEventListener("text", e => { const d = JSON.parse(e.data); addEv(card, "text", `💬 ${esc(d.text)}`); });
+  es.addEventListener("text", e => { const d = JSON.parse(e.data); addEv(card, "text", md(d.text)); });
   es.addEventListener("failed", e => { addEv(card, "error", esc(JSON.parse(e.data).text)); });
   es.addEventListener("done", e => { const d = JSON.parse(e.data);
     const p = card.querySelector("h3 .pill"); p.textContent = d.stop_reason; p.className = "pill " + (d.error ? "bad" : "ok");
@@ -171,7 +215,7 @@ $("#results").addEventListener("click", async e => {
   const r = await (await fetch(`/api/result?model=${encodeURIComponent(tr.dataset.m)}&case=${tr.dataset.c}`)).json();
   $("#detail").innerHTML = `<div class="card" style="margin-top:14px"><h3>${r.case_id} · ${esc(r.model)}</h3><div class="req">“${esc(r.request)}”</div>
     ${r.recorded_calls.map(c => `<div class="ev write">✋ <span class="tool">${esc(c.tool)}</span><pre>${esc(JSON.stringify(c.arguments, null, 2))}</pre></div>`).join("")}
-    ${r.final_text ? `<div class="ev text">💬 ${esc(r.final_text)}</div>` : ""}
+    ${r.final_text ? `<div class="ev text">${md(r.final_text)}</div>` : ""}
     <details><summary>full transcript (${r.messages.length} messages)</summary><pre>${esc(JSON.stringify(r.messages, null, 2))}</pre></details></div>`;
   $("#detail").scrollIntoView({behavior:"smooth"});
 });

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Avvi Admin Bench</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="How well AI models handle real IT admin requests, before any of them touch a real company.">
+<meta name="theme-color" content="#f4f4f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Admin Bench">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/app/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/app/icon-180.png">
+<script>
+  // Set the theme before first paint so dark-mode readers never see a light flash.
+  (function () {
+    var pref = localStorage.getItem("theme") || "auto";
+    var dark = pref === "dark" || (pref === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+  })();
+</script>
+<link rel="stylesheet" href="/app/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+  <aside class="side" aria-label="Main">
+    <a class="brand" href="#/">
+      <img src="/app/icon.svg" alt="" width="30" height="30">
+      <span><b>Admin Bench</b><small>Avvi · model scoreboard</small></span>
+    </a>
+    <nav class="side-nav" id="sideNav"></nav>
+    <div class="side-foot">
+      <div id="sideSpend"></div>
+      <div class="side-actions">
+        <span class="side-link">Theme</span>
+        <button class="icon-btn" id="themeBtnSide" type="button" aria-label="Change theme"></button>
+      </div>
+    </div>
+  </aside>
+  <div class="page">
+    <header class="top">
+      <button class="icon-btn back" id="backBtn" type="button" aria-label="Back" hidden></button>
+      <div class="top-title"><span id="topTitle">Admin Bench</span><small id="topSub"></small></div>
+      <a class="spend-chip" id="spendChip" href="#/sweep" aria-label="Spend so far"></a>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Change theme"></button>
+    </header>
+    <main id="main" tabindex="-1"></main>
+  </div>
+  <nav class="tabs" id="tabBar" aria-label="Sections"></nav>
+</div>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script type="module" src="/app/js/main.js"></script>
+</body>
+</html>

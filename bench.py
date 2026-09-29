@@ -57,11 +57,22 @@ def model_dir(model):
 def total_cost_so_far():
     total = 0.0
     for f in RESULTS.glob("*/*.json"):
+        if f.name.startswith("_"):  # per-model score summaries repeat the case costs
+            continue
         try:
             total += json.loads(f.read_text()).get("cost") or 0
         except (json.JSONDecodeError, OSError):
             pass
     return total
+
+
+def is_unroutable(err):
+    """OpenRouter found no provider that meets require_parameters + data_collection=deny."""
+    return "no endpoints found" in str(err).lower()
+
+
+def should_skip_model(err):
+    return bool(err) and ("data_collection" in err.lower() or is_unroutable(err))
 
 
 def chat(model, messages, use_temperature=True):
@@ -74,7 +85,12 @@ def chat(model, messages, use_temperature=True):
     }
     if use_temperature:
         body["temperature"] = 0
-    r = requests.post(API_URL, headers=headers(), json=body, timeout=180)
+    for attempt in range(8):
+        r = requests.post(API_URL, headers=headers(), json=body, timeout=180)
+        if r.status_code != 429:
+            break
+        # Rate limited (new accounts get ~20 requests/minute per model): wait and retry.
+        time.sleep(min(float(r.headers.get("Retry-After") or 0) or 10 * (attempt + 1), 60))
     try:
         data = r.json()
     except ValueError:
@@ -86,8 +102,9 @@ def chat(model, messages, use_temperature=True):
     return data
 
 
-def run_case(model, case, on_event=None):
-    """Run one case against one model. Returns the result dict (also saved to disk)."""
+def run_case(model, case, on_event=None, out_file=None):
+    """Run one case against one model. Returns the result dict (also saved to disk).
+    out_file overrides where it is saved (live runs from the web app keep their own history)."""
     emit = on_event or (lambda *_: None)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": case["request"]}]
     result = {
@@ -104,7 +121,8 @@ def run_case(model, case, on_event=None):
             try:
                 data = chat(model, messages, result["temperature_zero"])
             except BenchError as e:
-                if result["temperature_zero"] and "temperature" in str(e).lower():
+                # A model that doesn't support temperature gets no endpoint under require_parameters.
+                if result["temperature_zero"] and ("temperature" in str(e).lower() or is_unroutable(e)):
                     result["temperature_zero"] = False
                     emit("note", {"text": "Model rejected temperature=0; retrying without it."})
                     data = chat(model, messages, False)
@@ -157,9 +175,9 @@ def run_case(model, case, on_event=None):
 
     result["duration_s"] = round(time.time() - start, 2)
     result["messages"] = messages
-    out_dir = model_dir(model)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / f"{case['id']}.json").write_text(json.dumps(result, indent=2))
+    out_file = Path(out_file) if out_file else model_dir(model) / f"{case['id']}.json"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(json.dumps(result, indent=2))
     emit("done", {k: result[k] for k in ("case_id", "stop_reason", "cost", "usage", "duration_s", "turns", "error")})
     return result
 
@@ -193,8 +211,8 @@ def main():
         tools = ", ".join(c["tool"] for c in r["recorded_calls"]) or "-"
         print(f"[{i}/{len(cases)}] {case['id']} {r['stop_reason']:<18} {tools:<40} "
               f"${r['cost']:.4f}  total ${total_cost_so_far():.2f}" + (f"  ERROR {r['error']}" if r["error"] else ""))
-        if r["error"] and "data_collection" in r["error"].lower():
-            sys.exit(f"{a.model} rejected data_collection=deny. Skipping this model (setting NOT removed).")
+        if should_skip_model(r["error"]):
+            sys.exit(f"{a.model} has no endpoint for data_collection=deny + tools. Skipping this model (setting NOT removed).")
 
 
 if __name__ == "__main__":
