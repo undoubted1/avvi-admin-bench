@@ -1,0 +1,1096 @@
+[
+  {
+    "name": "ask_permission_type",
+    "description": "⚠️ YOU MUST CALL THIS TOOL - NEVER GENERATE PERMISSION OPTIONS AS TEXT! If you write out '1. Full Read Access 2. Send As...' as text without calling this tool, the confirmation workflow will break.\n\nMANDATORY FIRST STEP when users request mailbox access (including shared mailboxes). Ask the user what type of access they want:\n\nOption 1: Full Read Access (most common) - Can read/manage emails but NOT send as the mailbox owner\nOption 2: Full Read Access + Send As - Can read/manage emails AND send emails as the mailbox owner\nOption 3: Full Read Access + Send on Behalf - Can read/manage emails AND send emails on behalf of the mailbox owner\nOption 4: Full Permissions - All three permissions (Read + Send As + Send on Behalf)\n\nIMPORTANT: When user responds with '2', '3', or '4', they want the corresponding permission combination.\n\n🚨 CRITICAL - YOUR ONLY JOB: Call this tool, display the 'message' field from the result, and END YOUR TURN. DO NOT say anything else. DO NOT generate any confirmation. DO NOT call any other tools. Just display the message and stop.\n\n🚨 CRITICAL - AUTOMATIC EXECUTION: After the user responds with their permission type choice ('1', '2', '3', or '4'), the SERVER will automatically execute the action. You will NOT be involved. The server handles everything automatically. Your job is DONE after calling this tool.\n\nCRITICAL SYNTAX PARSING:\n- 'give [PERSON A] access to [PERSON B]' → PERSON A is delegateEmail, PERSON B is mailboxEmail\n- 'give alex access to joe' → delegateEmail=alex, mailboxEmail=joe\n- 'give me access to dana' → delegateEmail=current user, mailboxEmail=dana\n\n🚨 CRITICAL - DISPLAY THE MESSAGE AND STOP: After calling this tool, display ONLY the 'message' field from the tool result. DO NOT add any commentary. DO NOT say 'I understand you want...'. DO NOT generate a confirmation. Just show the message and end your turn.\n\n🚨 MULTI-PART REQUEST TRACKING: If the user's original message contains MULTIPLE requests (e.g., 'give access AND set up forwarding'), you MUST include the additionalActions parameter listing ALL other actions they requested. After the user answers the permission question, you MUST use request_multi_confirmation to handle ALL actions together.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the MAILBOX OWNER (the person whose mailbox is being shared). In 'give alex access to joe', this is JOE's email."
+        },
+        "mailboxDisplayName": {
+          "type": "string",
+          "description": "The display name of the MAILBOX OWNER (e.g., 'Joe Taylor'). In 'give alex access to joe', this is JOE's name."
+        },
+        "delegateEmail": {
+          "type": "string",
+          "description": "The email address of the DELEGATE (the person who will RECEIVE access). In 'give alex access to joe', this is ALEX's email. When the user says 'give ME access', use the current user's email."
+        },
+        "delegateDisplayName": {
+          "type": "string",
+          "description": "The display name of the DELEGATE (the person who will RECEIVE access). In 'give alex access to joe', this is ALEX's name."
+        },
+        "originalUserMessage": {
+          "type": "string",
+          "description": "🚨 ALWAYS REQUIRED - The user's original message verbatim. This is CRITICAL for detecting temporary/time-limited access requests (e.g., 'for 2 minutes', 'until 5 PM', 'for 24 hours'). Without this, the server cannot properly handle scheduling. ALWAYS pass the user's exact original message."
+        },
+        "additionalActions": {
+          "type": "array",
+          "description": "REQUIRED when user's message contains multiple requests. List of OTHER actions the user requested besides mailbox access. CRITICAL: Each action MUST be a SEPARATE entry with its own parameters. Do NOT combine multiple users into one action (e.g., if removing Peter AND Elissa, create TWO separate entries, one for each user). After permission type is answered, the server will automatically include all actions in the confirmation.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "description": "Tool name (e.g., 'set_mail_forwarding', 'remove_mailbox_access')"
+              },
+              "description": {
+                "type": "string",
+                "description": "Brief human-readable description (e.g., 'Remove Peter Dunn's access to Hope Sanders's mailbox')"
+              },
+              "parameters": {
+                "type": "object",
+                "description": "REQUIRED for remove_mailbox_access and other actions that target different users than the grant action. Must include mailboxEmail, delegateEmail, and display names; remove_mailbox_access also needs removeFullAccess, removeSendAs and removeSendOnBehalf as true/false matching what the user asked (the card is refused without them). E.g., {mailboxEmail: 'hope@contoso.test', delegateEmail: 'peter@contoso.test', mailboxDisplayName: 'Hope Sanders', delegateDisplayName: 'Peter Dunn', removeFullAccess: true, removeSendAs: true, removeSendOnBehalf: true}"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "mailboxEmail",
+        "mailboxDisplayName",
+        "delegateEmail",
+        "originalUserMessage"
+      ]
+    }
+  },
+  {
+    "name": "request_confirmation",
+    "description": "ONLY USE FOR SINGLE-STEP OPERATIONS. For MULTI-STEP operations (e.g., 'remove X and give me Y', 'grant send as and send on behalf', 'remove all permissions'), use request_multi_confirmation instead. This tool is mandatory for single operations like: creating/updating/deleting distribution lists, granting/removing mailbox access, setting/removing forwarding, granting/revoking Send As or Send on Behalf permissions, setting/removing Out of Office, and scheduling temporary access.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "The exact tool name you want to execute after confirmation (e.g., 'create_distribution_list', 'create_m365_group', 'grant_mailbox_access', 'set_mail_forwarding', 'schedule_temporary_access')"
+        },
+        "summary": {
+          "type": "string",
+          "description": "A clear, human-readable summary. CRITICAL: Copy user displayName EXACTLY from search_users results — NEVER fabricate/guess last names. Example: 'Grant Irena Marsh (irena@contoso.test) edit access to folder in Markie Dale (markie@contoso.test) OneDrive'"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "The exact parameters object that will be passed to the action tool after confirmation"
+        }
+      },
+      "required": [
+        "action",
+        "summary",
+        "parameters"
+      ]
+    }
+  },
+  {
+    "name": "request_multi_confirmation",
+    "description": "USE FOR MULTI-STEP OPERATIONS when the user requests 2+ actions in one message (e.g., 'remove send on behalf and give me full access', 'grant send as and send on behalf'). This tool presents ALL actions to the user for a single confirmation, then executes ALL of them when user says 'yes'. ALWAYS use this instead of request_confirmation when the user's request contains 'and', 'also', 'both', or multiple distinct actions.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": "array",
+          "description": "Array of action objects, each containing the tool name, parameters, and summary for one action",
+          "items": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "description": "The exact tool name (e.g., 'revoke_send_on_behalf_permission', 'grant_mailbox_access')"
+              },
+              "parameters": {
+                "type": "object",
+                "description": "The exact parameters object for this action"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Brief description of this action. CRITICAL: Copy user displayName EXACTLY from search_users — NEVER fabricate/guess last names."
+              }
+            },
+            "required": [
+              "action",
+              "parameters",
+              "summary"
+            ]
+          }
+        },
+        "combinedSummary": {
+          "type": "string",
+          "description": "Overall summary of all actions. CRITICAL: Copy user displayName EXACTLY from search_users — NEVER fabricate/guess last names."
+        }
+      },
+      "required": [
+        "actions",
+        "combinedSummary"
+      ]
+    }
+  },
+  {
+    "name": "search_users",
+    "description": "Search for users in the organization by name, email, or on-premises sAMAccountName. Returns ALL users in the organization (not filtered by permission). MUST USE THIS TOOL when user wants to share THEIR OWN mailbox with someone (e.g., 'give Training access to MY mailbox', 'share MY mailbox with John', 'add Sarah to MY email'). The delegate can be ANYONE in the organization, not just users the admin can manage. Use this for: (1) finding delegates when user shares their OWN mailbox, (2) 'who can I share my mailbox with?', (3) searching for any user in the full company directory. Returns email, department, job title, isSharedMailbox (boolean), userPurpose (user/shared), and onPremisesSamAccountName when Graph provides it. For RDS or hybrid AD actions, copy onPremisesSamAccountName exactly; NEVER guess it from the email prefix. IMPORTANT: Use isSharedMailbox field to determine mailbox type — NEVER guess based on display name.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Optional search query - can be a first name, last name, full name, or email address. Leave empty to list all users in the organization."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "resolve_email_recipient",
+    "description": "Resolve any mail-enabled recipient by email address. Returns the recipient type (User Mailbox, Shared Mailbox, Distribution List, Mail Contact, Security Group, etc.) and basic info. Use this tool when: (1) a user asks 'who does [email] go to?', 'where does [email] go?', or 'what is [email]?', (2) search_users returns no match for an email address — this tool checks ALL recipient types including distribution lists, mail contacts, and security groups, (3) you need to identify what type of object an email address is before deciding which tool to use next. This is a READ-ONLY identification tool.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "emailAddress": {
+          "type": "string",
+          "description": "The email address to resolve (e.g., support@contoso.test)"
+        }
+      },
+      "required": [
+        "emailAddress"
+      ]
+    }
+  },
+  {
+    "name": "get_mailbox_details",
+    "description": "Gets detailed information about a specific mailbox including settings. Only works if the user has permission to manage this mailbox. Requires the user's email address or user ID.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The email address or user ID of the mailbox to query"
+        }
+      },
+      "required": [
+        "userId"
+      ]
+    }
+  },
+  {
+    "name": "get_all_mailboxes",
+    "description": "Retrieves a list of all mailboxes/users that the current user has permission to see. Returns user ID, display name, email address, enabled status, isSharedMailbox (boolean), and userPurpose (user/shared). Results are automatically filtered based on user permissions. IMPORTANT: Use the isSharedMailbox field to determine mailbox type — NEVER guess based on display name. To find which mailboxes are shared (e.g. to check who has access to each shared mailbox), call it with mailboxType \"shared\" instead of searching name by name.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxType": {
+          "type": "string",
+          "enum": [
+            "shared",
+            "user"
+          ],
+          "description": "Optional: return only shared mailboxes or only user mailboxes. Accounts whose type could not be read are returned separately in mailboxTypeNotChecked."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "get_mailbox_permissions",
+    "description": "Shows who CURRENTLY has permissions to a specific mailbox. Returns ALL THREE permission types in a single call: Full Access, Send As, AND Send on Behalf.\n\nUse this to check whether any specific user has ANY type of access to a mailbox. The result is synchronous — no job polling needed.\n\n📋 RESPONSE FORMAT:\nThe response contains a 'delegates' array where each entry has:\n- user: The delegate's EMAIL ADDRESS (e.g., 'alex@contoso.test')\n- permissionType: 'FullAccess', 'SendAs', or 'SendOnBehalf'\n- accessRights: The specific rights granted\n\nThe response also has:\n- summary: A plain-language yes/no answer (e.g., 'No, anna@example.com does NOT have access to Submissions@example.com')\n- fullAccessCount / sendAsCount / sendOnBehalfCount: per-type counts for quick reference\n\n🔍 HOW TO CHECK IF A SPECIFIC USER HAS ACCESS:\n1. Receive the mailbox name/email from the user\n2. Call this tool with mailboxEmail set to that mailbox\n3. Look through the 'delegates' array for the target user's email (case-insensitive match on the 'user' field)\n4. If found, check 'permissionType' to state exactly what kind of access they have\n5. If not found in any entry, the user has no delegated access\n6. Use the 'summary' field as the basis for your plain-language answer\n\n✅ RELIABLE: The 'user' field is ALWAYS an email address, making matching simple and reliable across all tenants.\n\nIMPORTANT: This tool only shows CURRENT permissions. If the user asks about scheduled or future access, ALSO call list_scheduled_tasks.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the mailbox to check permissions for"
+        }
+      },
+      "required": [
+        "mailboxEmail"
+      ]
+    }
+  },
+  {
+    "name": "get_user_delegations",
+    "description": "Get which mailboxes a user has been granted access to (reverse lookup). Shows all mailboxes where the user is a delegate. Use this when asked 'which mailboxes does X have access to?' or 'what does X have access to?' or 'who does X have access to?' or 'list all users X has access to'. This uses a cached lookup for fast responses.\n\n🎯 USE CASES:\n- 'Which mailboxes does Bella have access to?' → Use this tool with userEmail=bella@...\n- 'What does John have access to?' → Use this tool with userEmail=john@...\n- 'List all users Bella can access' → Use this tool with userEmail=bella@...\n\n⚡ PERFORMANCE: This tool uses a delegation cache for instant responses. First query may take 30-60 seconds to sync from Exchange, subsequent queries are instant.\n\n📋 RESPONSE FORMAT:\nReturns an array of mailboxes the user has access to, with permission types (Full Access, Send As, Send on Behalf).\n\nIMPORTANT: This is the OPPOSITE of get_mailbox_permissions:\n- get_mailbox_permissions: Shows who has access TO a mailbox\n- get_user_delegations: Shows which mailboxes a user HAS ACCESS TO",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "The email address of the user to check delegations for (the person who might have access to other mailboxes)"
+        },
+        "forceRefresh": {
+          "type": "boolean",
+          "description": "Force refresh from Exchange Online (bypass cache). Default: false",
+          "default": false
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "get_user_group_memberships",
+    "description": "Gets ALL group memberships for a specific user, including security groups, Microsoft 365 groups, distribution lists, and directory roles. Use this when users ask 'what groups is [user] in?', 'show me [user]'s group memberships', 'what groups does [user] belong to?', or before removing a user from all groups.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "The email address of the user to check group memberships for. If the user says 'my groups' or 'I', use the current user's email from the context."
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "get_all_groups",
+    "description": "Gets ALL groups in the organization including Microsoft 365 Groups, Classic Exchange Distribution Lists, Security Groups, and Mail-Enabled Security Groups. Returns complete details with owner information, group types, and member counts. ALWAYS use this tool when users ask to 'list all groups', 'show all groups', 'search for a group', 'find a group', or want to see any type of group inventory. This is the PRIMARY tool for all group discovery. To see the actual list of members for a specific group, use get_security_group_members (for security/M365 groups) or get_distribution_list_members (for DLs). Only available to MSP admins.",
+    "input_schema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "get_security_group_members",
+    "description": "Gets all members of a specific Entra security group. Returns email addresses and display names. Use this when users ask who is in a security group.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "groupIdentifier": {
+          "type": "string",
+          "description": "The display name or ID (GUID) of the security group"
+        }
+      },
+      "required": [
+        "groupIdentifier"
+      ]
+    }
+  },
+  {
+    "name": "get_distribution_list_members",
+    "description": "Gets all members of a specific Exchange distribution list (mailing list). Returns email addresses and display names of all members. ONLY use this for distribution lists/mailing groups — NOT for Microsoft Teams. If the user mentions a \"Team\" by name, use list_teams + get_team_members instead.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "emailAddress": {
+          "type": "string",
+          "description": "The email address of the distribution list"
+        }
+      },
+      "required": [
+        "emailAddress"
+      ]
+    }
+  },
+  {
+    "name": "get_user_licenses",
+    "description": "Get all licenses currently assigned to a specific user. Returns the list of licenses with SKU IDs that can be used with remove_license. Use this when you need to remove all licenses from a user (e.g., during permanent account disable).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user to check licenses for"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "check_license_availability",
+    "description": "Check if a specific license type has available units. Returns detailed information about total, consumed, and available licenses for the specified SKU.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "skuId": {
+          "type": "string",
+          "description": "SKU ID of the license to check (get this from query_licenses)"
+        }
+      },
+      "required": [
+        "skuId"
+      ]
+    }
+  },
+  {
+    "name": "get_forwarding_status",
+    "description": "Checks if email forwarding is CURRENTLY configured for a mailbox and shows where emails are being forwarded. Only works if the requesting user has permission to manage the mailbox.\n\nIMPORTANT: This tool only shows CURRENT forwarding status. If the user asks about scheduled forwarding or future forwarding, you MUST ALSO call list_scheduled_tasks to check for scheduled forwarding actions.\n\n⏱️ ASYNC OPERATION: This operation queues a job and returns immediately with a jobId. WORKFLOW:\n1. Tell the user: 'Let me check that for you. This will take about a minute...'\n2. Call this tool - it returns immediately with status='queued' and a jobId\n3. IMPORTANT: Immediately call check_job_status with the jobId to get the actual result\n4. If check_job_status returns status='running' or 'queued', tell the user to wait and try again in a moment\n5. If check_job_status returns status='completed', use the result to answer the user's question\n6. CRITICAL: After getting current status, ALWAYS call list_scheduled_tasks to check for scheduled forwarding actions",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the mailbox to check forwarding status for"
+        }
+      },
+      "required": [
+        "mailboxEmail"
+      ]
+    }
+  },
+  {
+    "name": "get_mfa_status",
+    "description": "Check if a user has MFA (Multi-Factor Authentication) enabled and view their registered authentication methods. Use this tool when the user asks questions like \"does [user] have MFA?\", \"is MFA enabled for [user]?\", \"what MFA methods does [user] have?\", \"check MFA status\", or \"show MFA configuration\". Returns detailed information about Microsoft Authenticator apps, phone numbers, FIDO2 security keys, Windows Hello devices, and other authentication methods currently registered. Use this before resetting MFA or when troubleshooting authentication issues.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user whose MFA status you want to check"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "get_sign_in_logs",
+    "description": "Get recent sign-in logs for a user showing success/failure, IP address, location, application, device, and conditional access policy impact. Use when troubleshooting login issues or when user asks \"show sign-in history for [person]\", \"when did [person] last log in?\", or \"sign-in activity\".",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email of the user to check sign-in logs for"
+        },
+        "maxResults": {
+          "type": "integer",
+          "description": "Maximum number of results (default 10, max 50)"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "list_user_devices",
+    "description": "List Intune-managed devices for a user with compliance status, OS, model, and storage info. Use when user asks \"what devices does [person] have?\", \"show devices\", \"check device compliance\".",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email of the user whose devices to list"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "create_user",
+    "description": "Create a BLANK new user account in Office 365 with NO group memberships and NO licenses. ONLY use this when the user wants a completely new user with NO template. If the user says \"create a user LIKE [person]\", \"clone\", or references an existing user as a template, you MUST use clone_user instead — NOT this tool. Before calling this tool, ask the user whether they want a temporary auto-generated password (user must change on first login) or a permanent password (user-provided). For permanent passwords, set forceChangePasswordNextSignIn to false and leave password empty — the backend will securely inject the admin-supplied password server-side. For temporary passwords, leave password empty and set forceChangePasswordNextSignIn to true.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "User's full display name (e.g., 'John Smith')"
+        },
+        "givenName": {
+          "type": "string",
+          "description": "User's first name (e.g., 'John'). Derived from displayName if not provided."
+        },
+        "surname": {
+          "type": "string",
+          "description": "User's last name / family name (e.g., 'Smith'). Derived from displayName if not provided."
+        },
+        "userPrincipalName": {
+          "type": "string",
+          "description": "User's email address / UPN (e.g., 'john.smith@contoso.test')"
+        },
+        "mailNickname": {
+          "type": "string",
+          "description": "Mail nickname / alias (e.g., 'john.smith'). Usually the part before @ in the email."
+        },
+        "password": {
+          "type": "string",
+          "description": "DO NOT provide this parameter. For permanent passwords, leave this empty — the backend will securely inject the admin-supplied password server-side. For temporary passwords, leave empty to auto-generate. Must meet complexity requirements if provided."
+        },
+        "forceChangePasswordNextSignIn": {
+          "type": "boolean",
+          "description": "Set to true for temporary password (user must change on first login), false for permanent password (user can keep it). Default: true. Ask user before setting this."
+        },
+        "usageLocation": {
+          "type": "string",
+          "description": "Two-letter country code for license assignment (e.g., 'US', 'CA', 'GB'). Default: 'US'"
+        },
+        "jobTitle": {
+          "type": "string",
+          "description": "Optional job title"
+        },
+        "department": {
+          "type": "string",
+          "description": "Optional department name"
+        },
+        "officeLocation": {
+          "type": "string",
+          "description": "Optional office location"
+        },
+        "mobilePhone": {
+          "type": "string",
+          "description": "Optional mobile phone number"
+        }
+      },
+      "required": [
+        "displayName",
+        "userPrincipalName",
+        "mailNickname"
+      ]
+    }
+  },
+  {
+    "name": "clone_user",
+    "description": "Create a new user by cloning ALL configuration from an existing template user in a SINGLE operation. This tool handles EVERYTHING: creates the user account, copies ALL group memberships, AND assigns ALL licenses from the template. Do NOT add separate assign_license or add_to_group steps — this tool does it all. Use request_confirmation (NOT request_multi_confirmation) BEFORE calling this tool.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "templateUserEmail": {
+          "type": "string",
+          "description": "Email of the existing user to clone settings from"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Full name for the new user"
+        },
+        "userPrincipalName": {
+          "type": "string",
+          "description": "Email/UPN for the new user (e.g., john@contoso.test)"
+        },
+        "mailNickname": {
+          "type": "string",
+          "description": "Mail nickname (usually the part before @)"
+        },
+        "password": {
+          "type": "string",
+          "description": "Optional password. If not provided, a secure password will be auto-generated."
+        },
+        "department": {
+          "type": "string",
+          "description": "Override department (otherwise cloned from template)"
+        },
+        "jobTitle": {
+          "type": "string",
+          "description": "Override job title (otherwise cloned from template)"
+        }
+      },
+      "required": [
+        "templateUserEmail",
+        "displayName",
+        "userPrincipalName",
+        "mailNickname"
+      ]
+    }
+  },
+  {
+    "name": "disable_user",
+    "description": "Disable a user account to prevent sign-in. This automatically disables the account AND revokes all active sessions (signs them out everywhere). Pass reclaimLicenses: true to ALSO remove all Microsoft 365 licenses as part of the disable — this works on BOTH cloud-only and hybrid (Avvi Connector) tenants. Use reclaimLicenses: true for permanent disables / terminations, and omit it (or pass false) for temporary disables where the user will return. On tenants with an Avvi Connector (hybrid), the server auto-routes this to disable_user_hybrid. Use this for terminated employees, security breaches, or when an account needs to be temporarily disabled. CRITICAL WORKFLOW: (1) First use search_users to find and confirm the exact user, (2) Ask user to confirm the identity: 'I found [Display Name] ([email]). Is this the correct user you want to disable?', (3) After user confirms identity, ask if temporary or permanent, (4) After getting temporary/permanent answer, use request_confirmation to confirm the disable action with a clear summary, (5) For permanent disables pass reclaimLicenses: true so licenses are removed automatically — do NOT call get_user_licenses/remove_license separately, (6) After core actions complete, offer optional follow-ups (auto-reply, mailbox delegation, email alias). NEVER disable a user without BOTH identity confirmation AND action confirmation.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user to disable (must be confirmed with user first)"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for disabling the account (required for audit trail)"
+        },
+        "reclaimLicenses": {
+          "type": "boolean",
+          "description": "If true, remove ALL Microsoft 365 licenses as part of the disable (works on both cloud-only and hybrid tenants). Set to true for permanent disables / terminations. Omit or set to false for temporary disables where the user will be re-enabled later (licenses are kept)."
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "enable_user",
+    "description": "Enable a previously disabled user account to allow sign-in. Use this to restore access for users who were previously disabled.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user to enable"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for enabling the account (required for audit trail)"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "offboard_user",
+    "description": "Complete user offboarding workflow with proper sequencing. Executes: 1) Set Out of Office, 2) Convert to Shared Mailbox, 3) Grant Mailbox Access to delegate, 4) Reassign Email Address (optional), 5) Schedule Mail Forwarding (optional). Jobs are queued with 20-second spacing and complete in the background. Use this when user requests multiple offboarding tasks together (e.g., 'convert to shared, set ooo, give access to alex, forward emails for 1 day').",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user being offboarded"
+        },
+        "delegateEmail": {
+          "type": "string",
+          "description": "Email address of the person who should receive access to the mailbox"
+        },
+        "outOfOfficeMessage": {
+          "type": "string",
+          "description": "Out of office message to set for the user"
+        },
+        "emailToReassign": {
+          "type": "string",
+          "description": "Optional: Email address to reassign to the delegate (defaults to userEmail if not specified)"
+        },
+        "forwardTo": {
+          "type": "string",
+          "description": "Optional: Email address to forward mail to (defaults to delegateEmail if not specified). Only used if forwardingDurationHours is specified."
+        },
+        "forwardingDurationHours": {
+          "type": "number",
+          "description": "Optional: How many hours to keep mail forwarding active (e.g., 24 for 1 day, 168 for 1 week). If specified, mail forwarding will be automatically enabled and then disabled after this duration."
+        },
+        "forwardingStartDelayMinutes": {
+          "type": "number",
+          "description": "Optional: Delay in minutes before starting mail forwarding (default: 0 for immediate). Example: 5 means forwarding starts in 5 minutes."
+        },
+        "forwardingKeepCopy": {
+          "type": "boolean",
+          "description": "Optional: Whether to keep a copy of forwarded emails in the original mailbox (default: true)"
+        }
+      },
+      "required": [
+        "userEmail",
+        "delegateEmail",
+        "outOfOfficeMessage"
+      ]
+    }
+  },
+  {
+    "name": "reset_user_password",
+    "description": "Reset a user's password. IMPORTANT: Before calling this tool, you MUST ask the user about their preferences: (a) Password type - temporary (auto-generated, must change on login) or permanent (user-provided, can keep it), and (b) Active sessions - sign out everywhere (revoke all sessions) or keep sessions active. Use the responses to set forceChangeOnNextLogin and revokeSessionsAfterReset parameters appropriately. The tool returns the password in the 'temporaryPassword' field - you MUST display this password to the user in your response.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user whose password should be reset"
+        },
+        "temporaryPassword": {
+          "type": "string",
+          "description": "Optional: Provide a specific password (makes it permanent if forceChangeOnNextLogin is false). Leave empty to auto-generate. Must meet complexity requirements: min 8 chars, uppercase, lowercase, numbers, symbols."
+        },
+        "forceChangeOnNextLogin": {
+          "type": "boolean",
+          "description": "Set to true for temporary password (user must change on next login), false for permanent password (user can keep it). Default: true. Ask user before setting this."
+        },
+        "revokeSessionsAfterReset": {
+          "type": "boolean",
+          "description": "Set to true to sign user out of all devices (recommended for security), false to keep sessions active. Default: true. Ask user before setting this."
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "reset_mfa",
+    "description": "Reset MFA (Multi-Factor Authentication) for a user by removing authentication methods except password. Sessions are revoked after reset so the user must sign in again. If ALL removable MFA methods are removed, Microsoft will prompt the user to register a new method on next sign-in. If other methods remain (e.g., phone/SMS), those will still satisfy MFA — the user will NOT be forced to register Authenticator unless all methods are removed. Use this when a user has lost their phone/authenticator app, changed devices, or needs to reconfigure MFA. Common scenarios: lost phone, new phone, authenticator app issues, locked out due to MFA.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user whose MFA should be reset"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for MFA reset (e.g., 'Lost phone', 'New device', 'Authenticator app issues'). Required for audit trail."
+        },
+        "methodTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional list of specific method types to remove (e.g. [\"microsoftAuthenticator\", \"phone\", \"fido2\", \"softwareOath\", \"temporaryAccessPass\"]). Omit or pass null to remove ALL removable MFA methods."
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "revoke_user_sessions",
+    "description": "Revoke all active sessions for a user, forcing them to sign in again on all devices. Use this after password reset, when a device is lost/stolen, or for security incidents. Takes effect immediately (within seconds).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user whose sessions should be revoked"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for revoking sessions (e.g., 'Password reset', 'Lost device', 'Security breach')"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "unlock_user_account",
+    "description": "Unlock a locked user account. For cloud-only users, this enables the account. For hybrid users, on-premises account may require separate unlock via PowerShell.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user to unlock"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for unlocking (required for audit trail)"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "grant_mailbox_access",
+    "description": "Grants a user full access to another user's mailbox. This grants Full Access permission (mailbox appears in Outlook) and optionally Send As permission based on the grantSendAs parameter. Only works if the requesting user has permission to manage the mailbox being delegated.\n\nCRITICAL SYNTAX PARSING:\n- 'give [PERSON A] access to [PERSON B]' → delegateEmail=PERSON A, mailboxEmail=PERSON B\n- 'give alex access to joe' → delegateEmail=alex's email, mailboxEmail=joe's email\n- 'give me access to dana' → delegateEmail=current user's email, mailboxEmail=dana's email",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the MAILBOX OWNER (whose mailbox is being shared). In 'give alex access to joe', this is JOE's email."
+        },
+        "delegateEmail": {
+          "type": "string",
+          "description": "The email address of the DELEGATE (who will RECEIVE access). In 'give alex access to joe', this is ALEX's email. When the user says 'give ME access', use the current user's email."
+        },
+        "grantSendAs": {
+          "type": "boolean",
+          "description": "Whether to also grant Send As permission. Set to true if user wants to send emails as the mailbox owner, false if they only want to read emails. Defaults to false (read-only access).",
+          "default": false
+        }
+      },
+      "required": [
+        "mailboxEmail",
+        "delegateEmail"
+      ]
+    }
+  },
+  {
+    "name": "remove_mailbox_access",
+    "description": "Removes a user's access to another user's mailbox. By default, removes ALL permission types (Full Access, Send As, Send on Behalf). You can selectively remove specific permissions using the optional flags. IMPORTANT: When the user says 'remove MY access', use the CURRENT USER'S EMAIL from the user context as the delegateEmail.\n\n🚀 PARALLEL EXECUTION: All removal jobs (Full Access, Send As, Send on Behalf) run simultaneously for maximum speed.\n\n⚡ NO PRE-CHECK NEEDED: This tool does NOT check current permissions first - it just attempts to remove the requested permissions. PowerShell scripts will handle cases where permissions don't exist.\n\n⏱️ ASYNC OPERATION: Takes ~60 seconds (all removals run in parallel).\n\n⚠️ CRITICAL: This tool ONLY removes CURRENT access. If the user also says 'cancel/remove the scheduled actions' or 'cancel scheduled tasks', you MUST ALSO: 1) Call list_scheduled_tasks to get task IDs, 2) Call cancel_scheduled_task for each task ID. Otherwise, scheduled tasks will still execute even after current access is removed!\n\n🔍 CONVERSATION CONTEXT: If the user says 'remove access' without specifying which mailbox, look at the conversation history to find which mailbox was recently mentioned or accessed. Only ask for clarification if the conversation history doesn't contain this information.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the mailbox to remove access from. If not explicitly stated by the user, check the conversation history for recently mentioned mailboxes."
+        },
+        "delegateEmail": {
+          "type": "string",
+          "description": "The email address of the person whose access should be removed. When the user says 'me', 'my', or 'I', use the current user's email from the CURRENT USER CONTEXT section."
+        },
+        "removeFullAccess": {
+          "type": "boolean",
+          "description": "Whether to remove Full Access permission. Default: true (remove it). Always set all three remove* flags explicitly in a confirmation."
+        },
+        "removeSendAs": {
+          "type": "boolean",
+          "description": "Whether to remove Send As permission. Default: true (remove it) — set false to keep Send As."
+        },
+        "removeSendOnBehalf": {
+          "type": "boolean",
+          "description": "Whether to remove Send on Behalf permission. Default: true (remove it) — set false to keep it."
+        }
+      },
+      "required": [
+        "mailboxEmail",
+        "delegateEmail"
+      ]
+    }
+  },
+  {
+    "name": "grant_send_as_permission",
+    "description": "Grants Send As permission to a trustee on a mailbox. This allows the trustee to send emails that appear to come FROM the mailbox (no 'on behalf of'). Only works if the requesting user has permission to manage the mailbox AND the feature is enabled for this tenant.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the mailbox to grant Send As permission on"
+        },
+        "trusteeEmail": {
+          "type": "string",
+          "description": "The email address of the person who will receive Send As permission"
+        }
+      },
+      "required": [
+        "mailboxEmail",
+        "trusteeEmail"
+      ]
+    }
+  },
+  {
+    "name": "set_mail_forwarding",
+    "description": "Configures email forwarding for a mailbox. By default, keeps a copy in the original mailbox while forwarding. This is real server-side forwarding (not inbox rules). Only works if the requesting user has permission to manage the mailbox.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the mailbox to configure forwarding for"
+        },
+        "forwardToEmail": {
+          "type": "string",
+          "description": "The email address to forward messages to"
+        },
+        "keepCopy": {
+          "type": "boolean",
+          "description": "Whether to keep a copy in the original mailbox (default: true). If false, messages are redirected only.",
+          "default": true
+        }
+      },
+      "required": [
+        "mailboxEmail",
+        "forwardToEmail"
+      ]
+    }
+  },
+  {
+    "name": "remove_mail_forwarding",
+    "description": "Removes email forwarding from a mailbox. Only works if the requesting user has permission to manage the mailbox.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the mailbox to remove forwarding from"
+        }
+      },
+      "required": [
+        "mailboxEmail"
+      ]
+    }
+  },
+  {
+    "name": "set_out_of_office",
+    "description": "Set automatic Out of Office replies for a mailbox. Users can say 'set out of office for dana' or 'turn on OOO for me'. Asks for message text, start date, end date, and reply scope (internal/external/all).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "Email address of the mailbox to set OOO for"
+        },
+        "message": {
+          "type": "string",
+          "description": "The automatic reply message text"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Start date-time, ISO 8601 in the admin's local time, e.g. '2026-09-25T09:00'. Give both startDate and endDate, or neither for a reply that stays on until turned off"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "End date-time, ISO 8601 in the admin's local time, e.g. '2026-09-25T17:00'"
+        },
+        "replyScope": {
+          "type": "string",
+          "enum": [
+            "Internal",
+            "External",
+            "All"
+          ],
+          "description": "Who should receive automatic replies: Internal (organization only), External (outside only), or All (everyone)",
+          "default": "All"
+        },
+        "internalMessage": {
+          "type": "string",
+          "description": "Optional separate message for internal recipients when replyScope is 'All'"
+        }
+      },
+      "required": [
+        "mailboxEmail",
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "convert_to_shared_mailbox",
+    "description": "Convert a user mailbox to a shared mailbox. This preserves all emails and data but changes the mailbox type so it can be accessed by multiple users without consuming a license. ORDER MATTERS: convert to shared FIRST, and only then remove the Microsoft 365 license. Removing the Exchange Online license first disconnects the mailbox and this conversion will fail, leaving the mailbox neither shared nor licensed. Disabling the user account beforehand is fine and does not affect the mailbox. Typically used when offboarding. Once converted the mailbox remains accessible for delegation and requires no license.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user mailbox to convert to shared"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "add_security_group_member",
+    "description": "Adds a user to an Entra security group. Use this when users want to add someone to a security group.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "groupIdentifier": {
+          "type": "string",
+          "description": "The display name or ID (GUID) of the security group"
+        },
+        "memberEmail": {
+          "type": "string",
+          "description": "The email address of the user to add to the security group"
+        }
+      },
+      "required": [
+        "groupIdentifier",
+        "memberEmail"
+      ]
+    }
+  },
+  {
+    "name": "remove_security_group_member",
+    "description": "Removes a user from an Entra security group. Use this when users want to remove someone from a security group.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "groupIdentifier": {
+          "type": "string",
+          "description": "The display name or ID (GUID) of the security group"
+        },
+        "memberEmail": {
+          "type": "string",
+          "description": "The email address of the user to remove from the security group"
+        }
+      },
+      "required": [
+        "groupIdentifier",
+        "memberEmail"
+      ]
+    }
+  },
+  {
+    "name": "add_distribution_list_member",
+    "description": "Adds a member (user) to an existing Exchange distribution list (mailing list). ONLY use this for distribution lists — NOT for Microsoft Teams. If the user mentions a \"Team\" by name, use add_team_member instead.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "emailAddress": {
+          "type": "string",
+          "description": "The email address of the distribution list"
+        },
+        "memberEmail": {
+          "type": "string",
+          "description": "The email address of the person to add to the distribution list"
+        }
+      },
+      "required": [
+        "emailAddress",
+        "memberEmail"
+      ]
+    }
+  },
+  {
+    "name": "remove_distribution_list_member",
+    "description": "Removes a member (user) from an existing Exchange distribution list (mailing list). ONLY use this for distribution lists — NOT for Microsoft Teams. If the user mentions a \"Team\" by name, use remove_team_member instead.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "emailAddress": {
+          "type": "string",
+          "description": "The email address of the distribution list"
+        },
+        "memberEmail": {
+          "type": "string",
+          "description": "The email address of the person to remove from the distribution list"
+        }
+      },
+      "required": [
+        "emailAddress",
+        "memberEmail"
+      ]
+    }
+  },
+  {
+    "name": "remove_from_all_groups",
+    "description": "Remove a user from ALL group memberships (security groups, M365 groups, distribution lists). Use during offboarding to strip all group access. IMPORTANT: Call request_confirmation BEFORE calling this tool.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email of the user to remove from all groups"
+        }
+      },
+      "required": [
+        "userEmail"
+      ]
+    }
+  },
+  {
+    "name": "assign_license",
+    "description": "Assign an Office 365 license to a user. The user must have a usageLocation set (automatically set to US if not present). License provisioning takes 1-5 minutes. ALWAYS call query_licenses first and use the exact tenant SKU ID or exact SKU part number it returns. NEVER guess from generic terms like \"Teams\" or \"E3\". If multiple licenses could match, ask the user which exact license they want before confirming.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user to assign the license to"
+        },
+        "skuId": {
+          "type": "string",
+          "description": "Exact tenant SKU ID or exact SKU part number from query_licenses (do not guess)"
+        },
+        "disabledPlans": {
+          "type": "array",
+          "description": "Optional array of service plan IDs to disable (e.g., to assign E3 but disable Teams)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "userEmail",
+        "skuId"
+      ]
+    }
+  },
+  {
+    "name": "remove_license",
+    "description": "Remove an Office 365 license from a user. The user will lose access to all services included in that license.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "type": "string",
+          "description": "Email address of the user to remove the license from"
+        },
+        "skuId": {
+          "type": "string",
+          "description": "SKU ID of the license to remove (get this from query_licenses or the user's current licenses)"
+        }
+      },
+      "required": [
+        "userEmail",
+        "skuId"
+      ]
+    }
+  },
+  {
+    "name": "wipe_device",
+    "description": "Factory reset an Intune-managed device. DESTRUCTIVE: Removes ALL data. Only use for lost/stolen devices or full decommissioning. IMPORTANT: Call request_confirmation BEFORE calling this tool.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "description": "The exact device name (e.g. \"JP-DEV-PC-2\") or Intune managed device GUID. Always use the device name, NOT a list number."
+        },
+        "keepEnrollmentData": {
+          "type": "boolean",
+          "description": "Whether to keep enrollment data (default false)"
+        }
+      },
+      "required": [
+        "deviceId"
+      ]
+    }
+  },
+  {
+    "name": "retire_device",
+    "description": "Retire an Intune-managed device. Removes company data but keeps personal data. Use for BYOD offboarding. IMPORTANT: Call request_confirmation BEFORE calling this tool.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "description": "The exact device name (e.g. \"JP-DEV-PC-2\") or Intune managed device GUID. Always use the device name, NOT a list number."
+        }
+      },
+      "required": [
+        "deviceId"
+      ]
+    }
+  },
+  {
+    "name": "get_bitlocker_keys",
+    "description": "Retrieve BitLocker recovery keys for a device. Use when a user is locked out due to BitLocker recovery screen. IMPORTANT: Call request_confirmation BEFORE calling this tool as it retrieves sensitive security keys. The tool automatically resolves device names to the correct Azure AD device ID.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "description": "The exact device name (e.g. \"JPALIENW\", \"JP-DEV-2\") or Azure AD device GUID. Always use the device name, NOT a list number."
+        }
+      },
+      "required": [
+        "deviceId"
+      ]
+    }
+  },
+  {
+    "name": "schedule_temporary_access",
+    "description": "⚠️ CONFIRMATION REQUIRED - DO NOT CALL THIS TOOL DIRECTLY! ⚠️\n\nGrants mailbox access IMMEDIATELY (when user confirms) and automatically revokes it at a specified future time. Use this when users want access to start NOW/IMMEDIATELY with automatic expiration.\n\n🚨 MANDATORY WORKFLOW - YOU MUST FOLLOW THESE STEPS IN ORDER:\n1. FIRST: Call ask_permission_type to determine what type of access the user wants (Full Access vs Full Access + Send As)\n2. SECOND: Call request_confirmation with action='schedule_temporary_access' and all parameters\n3. THIRD: Wait for user to reply 'yes' or 'no'\n4. ONLY THEN: The system will automatically call this tool (DO NOT call it yourself)\n\n❌ NEVER call schedule_temporary_access directly - it will be called automatically after confirmation\n✅ ALWAYS use request_confirmation first\n\nExamples: 'give me access for 2 hours', 'grant me access until Friday at 5 PM', 'give bella access to me for 2 min starting now', 'access me for 30 minutes'.\n\nThe access is granted immediately when user confirms (NOT as a scheduled task), and only the revoke is scheduled.\n\nCRITICAL: Do NOT convert times to UTC - pass local time components and let the server handle timezone conversion.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mailboxEmail": {
+          "type": "string",
+          "description": "The email address of the mailbox to grant temporary access to"
+        },
+        "delegateEmail": {
+          "type": "string",
+          "description": "The email address of the person who will receive temporary access. When the user says 'me', use the current user's email."
+        },
+        "revokeDate_local": {
+          "type": "string",
+          "description": "Local revoke date in YYYY-MM-DD format. Examples: '2026-01-27', '2026-12-25'. Use the date from the user's timezone, not UTC."
+        },
+        "revokeTime_local": {
+          "type": "string",
+          "description": "Local revoke time in 12-hour format with AM/PM. Examples: '8:58 PM', '5:00 PM', '11:30 AM'. Do NOT convert to UTC - pass the user's local time exactly as they specified it."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone identifier. Default: 'America/New_York'. Examples: 'America/New_York', 'America/Chicago', 'America/Los_Angeles'."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of why this temporary access was granted (e.g., 'Temporary access for vacation coverage')"
+        }
+      },
+      "required": [
+        "mailboxEmail",
+        "delegateEmail",
+        "revokeDate_local",
+        "revokeTime_local"
+      ]
+    }
+  }
+]
