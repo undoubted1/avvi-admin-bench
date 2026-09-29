@@ -39,12 +39,15 @@ class BenchError(Exception):
 
 
 # Kept out of the sweep, the scoreboard and live runs. OpenRouter's stealth/ models are anonymous and free
-# for a limited time before they're withdrawn, so their scores can't be rerun or compared later.
-EXCLUDED_PREFIXES = ("stealth/",)
+# for a limited time before they're withdrawn, so their scores can't be rerun or compared later. Aliases (~),
+# routers (openrouter/) and discounted :batch variants aren't distinct models (a :batch premium model would
+# also slip under the price cap below).
+EXCLUDED_PREFIXES = ("stealth/", "~", "openrouter/")
 
 
 def excluded(model):
-    return str(model or "").startswith(EXCLUDED_PREFIXES)
+    m = str(model or "")
+    return m.startswith(EXCLUDED_PREFIXES) or m.endswith(":batch")
 
 
 # The bench compares lower-cost models: anything priced above Claude Sonnet 5.5 ($ per 1M prompt, completion

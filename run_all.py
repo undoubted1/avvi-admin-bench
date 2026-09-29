@@ -50,7 +50,7 @@ def candidate_models():
         mid = m["id"]
         if "tools" not in (m.get("supported_parameters") or []):
             continue
-        if mid.startswith(("~", "openrouter/")) or mid.endswith(":batch") or bench.excluded(mid):
+        if bench.excluded(mid):
             continue
         pin, pout = price(m)
         if pin < 0 or pout < 0 or bench.too_expensive(pin, pout):
