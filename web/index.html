@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Avvi Admin Bench · dev</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b1f24; --muted:#667085; --line:#e4e7ec;
+          --blue:#2563eb; --green:#15803d; --amber:#b45309; --red:#b91c1c; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.45 -apple-system, system-ui, sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; gap:16px; padding:12px 20px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { font-size:18px; margin:0; }
+  .pill { font-size:12px; padding:3px 8px; border-radius:999px; background:#eef2ff; color:var(--blue); }
+  .pill.ok { background:#dcfce7; color:var(--green); } .pill.bad { background:#fee2e2; color:var(--red); }
+  header .spacer { flex:1; }
+  main { display:grid; grid-template-columns: 340px 1fr; height: calc(100vh - 53px); }
+  aside { border-right:1px solid var(--line); background:var(--card); overflow:auto; padding:16px; }
+  section { overflow:auto; padding:20px; }
+  label.h { display:block; font-weight:600; margin:0 0 6px; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  input[type=text] { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font:inherit; }
+  .hint { font-size:12px; color:var(--muted); margin:4px 0 16px; }
+  button { font:inherit; border:1px solid var(--line); background:var(--card); border-radius:8px; padding:6px 10px; cursor:pointer; }
+  button.primary { background:var(--blue); color:#fff; border-color:var(--blue); width:100%; padding:10px; font-weight:600; }
+  button:disabled { opacity:.5; cursor:default; }
+  .cat { margin:12px 0 4px; display:flex; justify-content:space-between; align-items:center; font-weight:600; }
+  .cat button { font-size:12px; padding:2px 8px; }
+  .case { display:flex; gap:8px; padding:4px 0; font-size:13px; align-items:flex-start; }
+  .case b { min-width:30px; }
+  .tabs { display:flex; gap:8px; margin-bottom:16px; }
+  .tabs button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .card h3 { margin:0 0 4px; font-size:15px; display:flex; gap:8px; align-items:center; }
+  .req { font-size:16px; margin:6px 0 10px; }
+  .exp { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .ev { border-left:3px solid var(--line); padding:4px 10px; margin:6px 0; font-size:13px; }
+  .ev.read { border-color:#94a3b8; } .ev.write { border-color:var(--amber); background:#fffbeb; }
+  .ev.text { border-color:var(--blue); white-space:pre-wrap; } .ev.error { border-color:var(--red); color:var(--red); }
+  .ev .tool { font-family:ui-monospace, monospace; font-weight:600; }
+  details pre, pre { font:12px ui-monospace, monospace; background:#f8fafc; padding:8px; border-radius:6px; overflow:auto; max-height:260px; margin:4px 0; }
+  .meta { font-size:12px; color:var(--muted); margin-top:8px; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); font-size:13px; }
+  tr.click { cursor:pointer; } tr.click:hover { background:#f1f5f9; }
+  .empty { color:var(--muted); text-align:center; padding:60px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Avvi Admin Bench</h1><span class="pill">dev · localhost</span>
+  <span class="spacer"></span>
+  <span id="key" class="pill">checking key…</span>
+  <span id="cost" class="pill">$0.00 / $40</span>
+</header>
+<main>
+  <aside>
+    <label class="h" for="model">Model</label>
+    <input id="model" type="text" list="models" placeholder="e.g. anthropic/claude-sonnet-5-5" autocomplete="off">
+    <datalist id="models"></datalist>
+    <div class="hint" id="modelHint">Loading tool-calling models from OpenRouter…</div>
+
+    <button class="primary" id="run">Run selected cases</button>
+    <div class="hint" id="selHint"></div>
+
+    <label class="h">Cases</label>
+    <div id="cases"></div>
+  </aside>
+  <section>
+    <div class="tabs">
+      <button id="tabLive" class="on">Live run</button>
+      <button id="tabResults">Saved results</button>
+    </div>
+    <div id="live"><div class="empty">Pick a model and some cases, then press Run.<br>Write tools are recorded, never executed.</div></div>
+    <div id="results" hidden></div>
+  </section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const CATS = {R:"Routine", K:"Risky", A:"Ambiguous", F:"Refuse / escalate"};
+let CASES = [], MODELS = [];
+
+async function status() {
+  const s = await (await fetch("/api/status")).json();
+  $("#key").textContent = s.key_set ? "OpenRouter key connected" : "No key in .env";
+  $("#key").className = "pill " + (s.key_set ? "ok" : "bad");
+  $("#cost").textContent = `$${s.total_cost.toFixed(2)} / $${s.cost_limit}`;
+  $("#cost").className = "pill " + (s.total_cost > s.cost_limit ? "bad" : "");
+}
+
+async function loadCases() {
+  CASES = await (await fetch("/api/cases")).json();
+  const box = $("#cases");
+  for (const [k, name] of Object.entries(CATS)) {
+    const list = CASES.filter(c => c.id[0] === k);
+    box.insertAdjacentHTML("beforeend",
+      `<div class="cat">${name} (${list.length})<button data-cat="${k}">toggle</button></div>` +
+      list.map(c => `<label class="case"><input type="checkbox" value="${c.id}"><b>${c.id}</b><span>${esc(c.request)}</span></label>`).join(""));
+  }
+  box.addEventListener("click", e => {
+    const k = e.target.dataset?.cat; if (!k) return;
+    const boxes = [...box.querySelectorAll("input")].filter(i => i.value[0] === k);
+    const on = !boxes.every(i => i.checked);
+    boxes.forEach(i => i.checked = on); selHint();
+  });
+  box.addEventListener("change", selHint);
+  selHint();
+}
+
+function selected() { return [...document.querySelectorAll("#cases input:checked")].map(i => i.value); }
+function selHint() { const n = selected().length; $("#selHint").textContent = n ? `${n} case${n>1?"s":""} selected` : "Select at least one case"; $("#run").disabled = !n; }
+
+async function loadModels() {
+  const r = await fetch("/api/models"); const d = await r.json();
+  if (!r.ok) { $("#modelHint").textContent = "Couldn't load models: " + d.error; return; }
+  MODELS = d;
+  $("#models").innerHTML = d.map(m => `<option value="${esc(m.id)}">${esc(m.name)} · $${m.prompt_per_m.toFixed(2)} in / $${m.completion_per_m.toFixed(2)} out per 1M</option>`).join("");
+  $("#model").value = localStorage.getItem("model") || "";
+  modelHint();
+}
+function modelHint() {
+  const m = MODELS.find(m => m.id === $("#model").value.trim());
+  $("#modelHint").textContent = m ? `${m.name}: $${m.prompt_per_m.toFixed(2)} in / $${m.completion_per_m.toFixed(2)} out per 1M tokens`
+    : `${MODELS.length} tool-calling models available. Start typing to search.`;
+}
+$("#model").addEventListener("input", modelHint);
+
+function caseCard(id) {
+  const c = CASES.find(c => c.id === id);
+  const div = document.createElement("div"); div.className = "card"; div.id = "card-" + id;
+  div.innerHTML = `<h3>${id} <span class="pill">running…</span></h3><div class="req">“${esc(c.request)}”</div>
+    <div class="exp"><b>Expected:</b> ${esc((c.expected?.outcome || []).join(" / "))} — ${esc(c.why)}</div><div class="evs"></div>`;
+  return div;
+}
+function addEv(card, cls, html) { card.querySelector(".evs").insertAdjacentHTML("beforeend", `<div class="ev ${cls}">${html}</div>`); card.scrollIntoView({block:"end", behavior:"smooth"}); }
+const argsHtml = a => `<details><summary>arguments</summary><pre>${esc(JSON.stringify(a, null, 2))}</pre></details>`;
+
+$("#run").addEventListener("click", () => {
+  const model = $("#model").value.trim(); if (!model) { $("#model").focus(); return; }
+  localStorage.setItem("model", model);
+  show("live"); $("#live").innerHTML = `<div class="meta" style="margin-bottom:12px">Model: <b>${esc(model)}</b></div>`;
+  $("#run").disabled = true; $("#run").textContent = "Running…";
+  const es = new EventSource(`/api/run?model=${encodeURIComponent(model)}&cases=${selected().join(",")}`);
+  let card;
+  es.addEventListener("start", e => { const d = JSON.parse(e.data); card = caseCard(d.case_id); $("#live").append(card); });
+  es.addEventListener("note", e => addEv(card, "", esc(JSON.parse(e.data).text)));
+  es.addEventListener("read", e => { const d = JSON.parse(e.data);
+    addEv(card, "read", `🔎 turn ${d.turn} · looked up <span class="tool">${esc(d.tool)}</span>${argsHtml(d.arguments)}<details><summary>mock result</summary><pre>${esc(JSON.stringify(d.result, null, 2))}</pre></details>`); });
+  es.addEventListener("write", e => { const d = JSON.parse(e.data);
+    addEv(card, "write", `✋ turn ${d.turn} · proposed <span class="tool">${esc(d.tool)}</span> (recorded, NOT executed)<pre>${esc(JSON.stringify(d.arguments, null, 2))}</pre>`); });
+  es.addEventListener("text", e => { const d = JSON.parse(e.data); addEv(card, "text", `💬 ${esc(d.text)}`); });
+  es.addEventListener("failed", e => { addEv(card, "error", esc(JSON.parse(e.data).text)); });
+  es.addEventListener("done", e => { const d = JSON.parse(e.data);
+    const p = card.querySelector("h3 .pill"); p.textContent = d.stop_reason; p.className = "pill " + (d.error ? "bad" : "ok");
+    card.insertAdjacentHTML("beforeend", `<div class="meta">${d.turns} turn(s) · ${d.duration_s}s · ${d.usage.prompt_tokens + d.usage.completion_tokens} tokens · $${(d.cost||0).toFixed(4)}</div>`);
+    status(); });
+  const end = () => { es.close(); $("#run").disabled = false; $("#run").textContent = "Run selected cases"; status(); };
+  es.addEventListener("fatal", e => { $("#live").insertAdjacentHTML("beforeend", `<div class="card ev error">${esc(JSON.parse(e.data).text)}</div>`); end(); });
+  es.addEventListener("finished", end);
+  es.onerror = () => { if (es.readyState !== EventSource.CLOSED) end(); };
+});
+
+async function loadResults() {
+  const rows = await (await fetch("/api/results")).json();
+  $("#results").innerHTML = rows.length ? `<table><tr><th>Model</th><th>Case</th><th>Stopped because</th><th>Proposed</th><th>Cost</th><th>Time</th></tr>` +
+    rows.map(r => `<tr class="click" data-m="${esc(r.model)}" data-c="${r.case_id}"><td>${esc(r.model)}</td><td>${r.case_id}</td><td>${esc(r.error ? "error: " + r.error : r.stop_reason)}</td><td>${esc(r.tools.join(", ") || "—")}</td><td>$${(r.cost||0).toFixed(4)}</td><td>${r.duration_s}s</td></tr>`).join("") + `</table><div id="detail"></div>`
+    : `<div class="empty">No saved results yet.</div>`;
+}
+$("#results").addEventListener("click", async e => {
+  const tr = e.target.closest("tr.click"); if (!tr) return;
+  const r = await (await fetch(`/api/result?model=${encodeURIComponent(tr.dataset.m)}&case=${tr.dataset.c}`)).json();
+  $("#detail").innerHTML = `<div class="card" style="margin-top:14px"><h3>${r.case_id} · ${esc(r.model)}</h3><div class="req">“${esc(r.request)}”</div>
+    ${r.recorded_calls.map(c => `<div class="ev write">✋ <span class="tool">${esc(c.tool)}</span><pre>${esc(JSON.stringify(c.arguments, null, 2))}</pre></div>`).join("")}
+    ${r.final_text ? `<div class="ev text">💬 ${esc(r.final_text)}</div>` : ""}
+    <details><summary>full transcript (${r.messages.length} messages)</summary><pre>${esc(JSON.stringify(r.messages, null, 2))}</pre></details></div>`;
+  $("#detail").scrollIntoView({behavior:"smooth"});
+});
+
+function show(which) {
+  $("#live").hidden = which !== "live"; $("#results").hidden = which !== "results";
+  $("#tabLive").classList.toggle("on", which === "live"); $("#tabResults").classList.toggle("on", which === "results");
+  if (which === "results") loadResults();
+}
+$("#tabLive").onclick = () => show("live"); $("#tabResults").onclick = () => show("results");
+
+status(); loadCases(); loadModels();
+</script>
+</body>
+</html>
