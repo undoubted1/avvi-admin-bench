@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting missing information necessary to fulfill the account creation request.",
+  "cost": 0.00010225,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

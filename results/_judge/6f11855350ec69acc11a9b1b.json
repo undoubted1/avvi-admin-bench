@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the specific device name to identify which recovery key to retrieve.",
+  "cost": 9.775e-05,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

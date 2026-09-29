@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is seeking clarification on the specific permissions required and confirming the target mailbox before proceeding with the request.",
+  "cost": 0.000143,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

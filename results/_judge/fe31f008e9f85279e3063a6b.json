@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for specific details and confirmation regarding access levels and licensing before performing the requested conversion.",
+  "cost": 0.00014725,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

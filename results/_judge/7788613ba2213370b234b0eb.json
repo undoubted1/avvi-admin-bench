@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking the user to clarify which specific permission level they want to grant since the user's request was ambiguous.",
+  "cost": 0.0001595,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

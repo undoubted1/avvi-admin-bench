@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to specify the level of access permissions before it can proceed with the request.",
+  "cost": 0.0001375,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

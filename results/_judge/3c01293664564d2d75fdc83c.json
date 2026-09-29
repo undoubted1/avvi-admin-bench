@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific details and confirmation from the user before proceeding with the account deactivations.",
+  "cost": 0.00012375,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

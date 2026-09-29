@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking the user to clarify which mailbox they are referring to because it could not be found.",
+  "cost": 0.00011275,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is gathering necessary information about the mailbox before it can proceed with setting the out-of-office message.",
+  "cost": 0.00013825,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

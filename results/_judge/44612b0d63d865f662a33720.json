@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting clarification on the user's intent before taking action.",
+  "cost": 9.85e-05,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

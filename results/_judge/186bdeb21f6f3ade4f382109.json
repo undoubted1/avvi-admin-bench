@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific details regarding the mailbox address, the list of users, permission levels, and duration before it can perform the requested action.",
+  "cost": 0.00016975,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

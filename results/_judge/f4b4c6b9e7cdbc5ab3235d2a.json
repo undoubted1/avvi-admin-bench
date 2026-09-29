@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant cannot fulfill the request as stated and is asking the user to choose between two alternative solutions.",
+  "cost": 0.00013275,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

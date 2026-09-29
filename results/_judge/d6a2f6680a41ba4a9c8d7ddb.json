@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant informs the user that the requested action has already been completed.",
+  "cost": 9.55e-05,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

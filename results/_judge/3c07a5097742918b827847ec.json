@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs more information to identify the specific user before proceeding with the removal.",
+  "cost": 0.000104,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

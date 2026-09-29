@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific details like email, display name, and password preference to proceed with the account creation.",
+  "cost": 0.00013675,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

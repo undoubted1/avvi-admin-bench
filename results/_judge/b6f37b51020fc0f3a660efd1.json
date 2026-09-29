@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to clarify the identity of the person because the provided description did not match any existing users.",
+  "cost": 0.00014125,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

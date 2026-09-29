@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on whether the user wants to forward all emails or only specific billing emails, and whether to keep copies in the original mailbox.",
+  "cost": 0.00017775,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

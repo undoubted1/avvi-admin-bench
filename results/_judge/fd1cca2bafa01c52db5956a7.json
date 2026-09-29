@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is in the middle of a multi-step process and needs to confirm the user's identity or proceed with the tool call to retrieve information before taking action.",
+  "cost": 0.00013,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

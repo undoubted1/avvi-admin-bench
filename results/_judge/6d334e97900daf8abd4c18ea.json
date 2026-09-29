@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on whether the departures are permanent to determine how to handle the Microsoft 365 licenses.",
+  "cost": 0.0001435,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

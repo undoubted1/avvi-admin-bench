@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific details about the account configuration before it can proceed with the creation.",
+  "cost": 0.00012625,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

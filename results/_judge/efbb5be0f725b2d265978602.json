@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for necessary clarifications before proceeding with the mailbox conversion.",
+  "cost": 0.0001195,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

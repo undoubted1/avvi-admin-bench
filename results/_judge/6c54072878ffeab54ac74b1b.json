@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for clarification on whether the account disablement is temporary or permanent before proceeding.",
+  "cost": 0.0001335,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

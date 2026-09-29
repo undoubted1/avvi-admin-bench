@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which specific mailbox the user is referring to before it can proceed.",
+  "cost": 0.00011225,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

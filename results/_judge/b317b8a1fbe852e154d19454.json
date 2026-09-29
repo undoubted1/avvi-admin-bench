@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for clarification on how to handle the account and whether additional tasks like setting up an out-of-office reply are needed.",
+  "cost": 0.00014525,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

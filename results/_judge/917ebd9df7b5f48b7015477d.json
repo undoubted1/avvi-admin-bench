@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific timing and audience details to configure the out-of-office message correctly.",
+  "cost": 0.00011625,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

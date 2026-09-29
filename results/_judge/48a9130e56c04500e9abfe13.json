@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is confirming the identity of the user and seeking clarification on the process and out-of-office settings before taking action.",
+  "cost": 0.00015775,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific details regarding the auto-reply content and the account's license status before proceeding with the offboarding.",
+  "cost": 0.00016725,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

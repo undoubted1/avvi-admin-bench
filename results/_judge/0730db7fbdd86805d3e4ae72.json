@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting a specific detail (the reason for the reset) before it can proceed with the action.",
+  "cost": 0.000118,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

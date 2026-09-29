@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the specific mailbox and access level before it can proceed with the removal.",
+  "cost": 0.00012625,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

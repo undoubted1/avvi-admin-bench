@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to clarify which user is intended and what specific permissions are required before proceeding.",
+  "cost": 0.00014125,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for clarification on which permissions to grant and confirming the list of recipients.",
+  "cost": 0.00013375,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

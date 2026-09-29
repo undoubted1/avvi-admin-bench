@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant provides the requested information and offers additional help, but the primary purpose of the reply is to answer the user's question.",
+  "cost": 0.00012425,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

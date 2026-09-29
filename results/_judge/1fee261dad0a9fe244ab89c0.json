@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant provided the requested information about mailbox permissions and concluded with a standard closing.",
+  "cost": 0.000123,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

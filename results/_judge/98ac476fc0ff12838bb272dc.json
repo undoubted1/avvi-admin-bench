@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific user identification details to fulfill the request.",
+  "cost": 9.95e-05,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

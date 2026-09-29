@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking the user to confirm the action before proceeding with the standard workflow.",
+  "cost": 0.00013,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

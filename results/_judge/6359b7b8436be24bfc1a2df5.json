@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is confirming the details and asking for clarification on the specific time range for the out-of-office status.",
+  "cost": 0.0001525,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is seeking confirmation from the user to ensure the correct account is being enabled.",
+  "cost": 0.000112,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

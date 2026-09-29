@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting specific details about which users and what level of permissions are required to fulfill the request.",
+  "cost": 0.00011325,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

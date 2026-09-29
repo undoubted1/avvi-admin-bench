@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific device identification and confirmation of the wipe type before performing the action.",
+  "cost": 0.0001205,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

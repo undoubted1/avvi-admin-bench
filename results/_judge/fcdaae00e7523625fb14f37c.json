@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to confirm the identity of the user and the specific type of deletion requested before proceeding.",
+  "cost": 0.00012325,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

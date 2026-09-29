@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant provides the requested license information for the user.",
+  "cost": 0.0001065,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

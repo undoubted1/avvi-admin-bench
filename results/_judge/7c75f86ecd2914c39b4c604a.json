@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to confirm the identity of the user and provide specific instructions on how to handle the mailbox before proceeding.",
+  "cost": 0.000183,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

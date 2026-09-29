@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific details about the offboarding process before it can proceed with removing the user.",
+  "cost": 0.000118,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

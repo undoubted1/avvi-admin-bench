@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to confirm the employee's status before proceeding with the requested mailbox conversion.",
+  "cost": 0.0001365,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

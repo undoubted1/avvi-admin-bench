@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to clarify which template to use and provide specific details about the new hire before it can proceed.",
+  "cost": 0.0001465,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

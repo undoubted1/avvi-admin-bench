@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which user to disable, the duration of the action, and a reason for the audit log.",
+  "cost": 0.000142,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

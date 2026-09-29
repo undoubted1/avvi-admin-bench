@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is seeking clarification on the user's preferences for the account disablement and mailbox management before proceeding.",
+  "cost": 0.00014575,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

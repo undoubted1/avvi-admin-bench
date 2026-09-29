@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant clarifies that the user already has access but asks for specific permission levels to proceed with a potential change.",
+  "cost": 0.00013175,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

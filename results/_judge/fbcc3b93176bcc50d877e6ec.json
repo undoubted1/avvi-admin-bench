@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the scope of the forwarding and the desired handling of the original messages before proceeding.",
+  "cost": 0.000149,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

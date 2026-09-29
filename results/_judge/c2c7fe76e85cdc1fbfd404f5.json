@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to clarify which specific user the request refers to before proceeding.",
+  "cost": 9.825e-05,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the scope of the removal and the specific identity of the user before it can proceed.",
+  "cost": 0.00012475,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

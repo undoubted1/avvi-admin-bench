@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is confirming the identity of the users and asking for clarification on the type of deactivation required.",
+  "cost": 0.00012425,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

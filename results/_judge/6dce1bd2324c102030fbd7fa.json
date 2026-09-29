@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting a clarifying detail (the email address) to ensure the correct account is modified.",
+  "cost": 0.00011325,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

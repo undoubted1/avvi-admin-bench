@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is seeking confirmation of the user's identity and the specific nature of the account suspension before proceeding.",
+  "cost": 0.00012425,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

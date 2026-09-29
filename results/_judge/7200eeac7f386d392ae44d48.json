@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which user to disable because there are two users with the same first name.",
+  "cost": 0.0001165,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

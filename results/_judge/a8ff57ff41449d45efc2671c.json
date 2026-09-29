@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which resource the user wants to remove Marcus from before it can proceed.",
+  "cost": 0.0001095,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

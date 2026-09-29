@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for confirmation on which mailbox to use and clarifying the scope of the forwarding action.",
+  "cost": 0.000122,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

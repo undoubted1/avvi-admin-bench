@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to confirm the user's identity and the specific nature of the account disablement before proceeding.",
+  "cost": 0.00015725,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

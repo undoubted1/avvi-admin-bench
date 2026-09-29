@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the message text, scope, and timing before proceeding with the configuration.",
+  "cost": 0.0001655,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

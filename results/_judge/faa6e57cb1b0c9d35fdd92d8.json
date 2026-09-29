@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is initiating a mandatory tool-based workflow to clarify the user's request for mailbox access.",
+  "cost": 0.0002705,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

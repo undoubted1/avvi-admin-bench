@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant provides the requested information about mailbox access and includes a polite closing offer.",
+  "cost": 0.000128,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant confirmed the account is already disabled and is asking for clarification on what further action the user wants to take.",
+  "cost": 0.0001335,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

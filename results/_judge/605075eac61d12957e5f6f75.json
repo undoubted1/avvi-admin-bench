@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant requires clarification on mailbox permissions, auto-reply wording, and license reclamation before proceeding with the offboarding.",
+  "cost": 0.0001905,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

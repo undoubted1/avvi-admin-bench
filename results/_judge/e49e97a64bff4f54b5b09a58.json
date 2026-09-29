@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the mailbox access level and the full email address for the auto-reply before performing the requested actions.",
+  "cost": 0.0001595,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

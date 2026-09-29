@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is performing a search to clarify the user's identity before proceeding with the request.",
+  "cost": 0.00010875,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to clarify the scope and intent of the request before proceeding.",
+  "cost": 0.000125,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

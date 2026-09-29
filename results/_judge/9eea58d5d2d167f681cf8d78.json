@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting identity confirmation and specific configuration details before performing the password reset.",
+  "cost": 0.000124,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to clarify the specific access requirements before proceeding.",
+  "cost": 0.000154,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

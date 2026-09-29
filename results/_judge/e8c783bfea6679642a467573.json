@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to clarify which user account to disable because there are multiple users with the name Sarah.",
+  "cost": 0.000108,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

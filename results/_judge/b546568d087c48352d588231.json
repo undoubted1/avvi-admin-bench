@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant cannot proceed because it could not locate the specified group and needs clarification from the user.",
+  "cost": 0.0001295,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

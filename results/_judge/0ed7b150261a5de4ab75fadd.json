@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific configuration details from the user before it can perform the password reset.",
+  "cost": 0.000119,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

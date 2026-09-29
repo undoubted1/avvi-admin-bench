@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant is providing the requested information by executing the function to retrieve the key.",
+  "cost": 9.875e-05,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

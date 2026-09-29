@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific details like the exact message text and timeframes to complete the request.",
+  "cost": 0.000162,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

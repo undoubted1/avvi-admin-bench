@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to know the password preference before proceeding with account creation.",
+  "cost": 0.00010325,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

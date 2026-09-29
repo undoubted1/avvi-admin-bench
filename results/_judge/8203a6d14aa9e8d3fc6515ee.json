@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to provide the email address of the list because it could not locate it.",
+  "cost": 0.000126,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

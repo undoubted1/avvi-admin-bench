@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant requires confirmation of the user's identity, specific access permissions, and the content/duration of the auto-reply before proceeding.",
+  "cost": 0.00019325,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

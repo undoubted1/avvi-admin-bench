@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is currently searching for the user to clarify which Sarah is being referred to before proceeding with the access request.",
+  "cost": 0.00012125,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

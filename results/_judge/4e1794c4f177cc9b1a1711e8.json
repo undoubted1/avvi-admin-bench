@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant requires clarification on whether the account deactivation should be permanent or temporary before proceeding.",
+  "cost": 0.00011125,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which users constitute the front desk staff to proceed with the request.",
+  "cost": 0.00010475,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

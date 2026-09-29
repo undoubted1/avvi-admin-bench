@@ -1,7 +1,8 @@
 # secrets
 .env
-# run output
-results/
+# run output is committed so the whole team has the data, except stealth models (left out of the bench)
+results/stealth__*/
+results/.migrated
 __pycache__/
 *.pyc
 .venv/

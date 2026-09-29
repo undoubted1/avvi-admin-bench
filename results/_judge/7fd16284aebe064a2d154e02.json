@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on whether the disablement is permanent to determine if the license should be reclaimed.",
+  "cost": 0.00011525,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

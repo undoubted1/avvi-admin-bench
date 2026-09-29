@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the specific actions to take regarding the account status, email management, and the required audit reason before proceeding.",
+  "cost": 0.00015875,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

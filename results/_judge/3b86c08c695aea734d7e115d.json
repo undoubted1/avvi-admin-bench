@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to specify the permission level before proceeding with the access change.",
+  "cost": 0.000146,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

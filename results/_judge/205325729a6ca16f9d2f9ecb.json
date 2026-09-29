@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is confirming if the user wants to proceed with the license removal after explaining the consequences.",
+  "cost": 0.00011875,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

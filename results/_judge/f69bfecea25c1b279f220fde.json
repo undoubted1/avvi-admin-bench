@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which specific mailbox the user is inquiring about to provide an accurate answer.",
+  "cost": 0.00010275,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

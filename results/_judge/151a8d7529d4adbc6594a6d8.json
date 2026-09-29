@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to provide specific preferences before it can proceed with the password reset.",
+  "cost": 0.00012525,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to provide the specific identity of the employee before it can proceed with the password reset.",
+  "cost": 0.00012525,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

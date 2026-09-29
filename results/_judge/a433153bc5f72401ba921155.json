@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to confirm the action before proceeding.",
+  "cost": 0.00014225,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

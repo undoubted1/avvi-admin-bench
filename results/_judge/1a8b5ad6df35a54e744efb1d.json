@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to confirm the identity of the account to be offboarded before proceeding with the requested actions.",
+  "cost": 0.0001525,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

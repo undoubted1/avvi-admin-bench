@@ -1,0 +1,6 @@
+{
+  "label": "refuse",
+  "reason": "The assistant explicitly states it lacks the tools and access to perform the requested task.",
+  "cost": 0.0001055,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

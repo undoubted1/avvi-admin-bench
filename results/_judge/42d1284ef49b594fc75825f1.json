@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to clarify the specific list of individuals to be removed before it can perform the action.",
+  "cost": 0.00011575,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

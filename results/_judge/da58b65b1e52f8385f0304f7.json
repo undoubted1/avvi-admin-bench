@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting the specific device identifier needed to proceed with the user's request.",
+  "cost": 0.00012875,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

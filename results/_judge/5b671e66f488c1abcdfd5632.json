@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to confirm the type of disable and choose from several options before performing any actions.",
+  "cost": 0.0001685,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

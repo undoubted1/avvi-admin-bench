@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to identify which specific user to act upon and the reason for the disablement.",
+  "cost": 0.000127,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

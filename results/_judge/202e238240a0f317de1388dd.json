@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant requires confirmation, a reason for the audit trail, and a choice between two offboarding procedures before proceeding.",
+  "cost": 0.000171,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

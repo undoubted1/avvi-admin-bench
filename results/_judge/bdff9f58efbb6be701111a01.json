@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant confirms the user already has access but asks for further instructions on how to proceed with the permissions.",
+  "cost": 0.000124,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

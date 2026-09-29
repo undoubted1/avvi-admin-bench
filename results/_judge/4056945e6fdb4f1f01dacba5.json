@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is confirming the identities of the users and asking for permission to perform an additional action regarding license reclamation.",
+  "cost": 0.000133,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to confirm the identity of the employee and the nature of the departure before proceeding with the offboarding process.",
+  "cost": 0.0001745,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

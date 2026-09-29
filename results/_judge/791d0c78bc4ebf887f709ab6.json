@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is gathering information to determine if an MFA reset is necessary before proceeding.",
+  "cost": 0.000101,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

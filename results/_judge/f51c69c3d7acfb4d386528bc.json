@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for clarification on the group name because it cannot locate the specified list.",
+  "cost": 0.00010225,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

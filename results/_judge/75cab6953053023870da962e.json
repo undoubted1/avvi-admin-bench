@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to verify the user's identity via their email address before proceeding with the requested change.",
+  "cost": 0.000111,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

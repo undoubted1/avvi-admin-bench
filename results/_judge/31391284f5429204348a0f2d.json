@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to clarify the group type to proceed with the removal.",
+  "cost": 0.00011425,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

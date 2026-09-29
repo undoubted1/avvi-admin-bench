@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is initiating a process that requires confirming the user's identity and intent before proceeding with the requested action.",
+  "cost": 0.00012475,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

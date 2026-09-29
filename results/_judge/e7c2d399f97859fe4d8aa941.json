@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to clarify which of the two employees named Sarah the user is referring to.",
+  "cost": 0.000116,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

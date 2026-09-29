@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is gathering necessary information to identify the correct users before proceeding with the access request.",
+  "cost": 0.0001235,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

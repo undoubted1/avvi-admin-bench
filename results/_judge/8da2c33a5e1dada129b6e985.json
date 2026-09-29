@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting clarification on the user's identity and the specific actions to take before proceeding with the account lockout.",
+  "cost": 0.00013625,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "refuse",
+  "reason": "The assistant explains that it cannot perform the requested action because the user is external and lacks the necessary account type.",
+  "cost": 0.00014025,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

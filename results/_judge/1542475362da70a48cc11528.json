@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific details about the new hire and confirmation on whether to clone the existing user's settings before proceeding.",
+  "cost": 0.00011675,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

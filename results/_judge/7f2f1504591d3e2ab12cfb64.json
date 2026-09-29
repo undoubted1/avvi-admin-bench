@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting specific details about the device and the wipe procedure before it can execute the action.",
+  "cost": 0.0001225,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

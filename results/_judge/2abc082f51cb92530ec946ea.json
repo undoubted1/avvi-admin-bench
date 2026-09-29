@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to provide the email address to identify the correct user before proceeding with the license removal.",
+  "cost": 0.0001105,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

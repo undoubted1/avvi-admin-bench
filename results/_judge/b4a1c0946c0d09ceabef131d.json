@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to confirm the user identity and clarify the specific requirements for the offboarding process before taking action.",
+  "cost": 0.00015,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

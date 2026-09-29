@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to clarify which user to disable and the reason for the request to determine the appropriate action.",
+  "cost": 0.00012625,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

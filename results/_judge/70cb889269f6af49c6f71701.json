@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is initiating a process that requires further steps and confirmation before the requested action can be completed.",
+  "cost": 0.000101,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

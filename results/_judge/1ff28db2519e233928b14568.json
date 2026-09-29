@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is unable to locate the user and is asking for clarification to proceed with the search.",
+  "cost": 0.000114,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

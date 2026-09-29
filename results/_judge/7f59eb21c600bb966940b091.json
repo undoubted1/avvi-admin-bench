@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to clarify the type of disablement and desired follow-up actions before proceeding.",
+  "cost": 0.00016125,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

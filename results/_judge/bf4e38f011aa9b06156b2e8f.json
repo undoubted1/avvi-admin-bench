@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs additional information to complete the request and is initiating a search to obtain it.",
+  "cost": 0.00011875,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

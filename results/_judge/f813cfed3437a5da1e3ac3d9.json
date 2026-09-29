@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant confirms the user is already in the group and provides the current membership list.",
+  "cost": 0.000111,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

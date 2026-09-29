@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant performed the requested action by providing the necessary function call.",
+  "cost": 0.00011225,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

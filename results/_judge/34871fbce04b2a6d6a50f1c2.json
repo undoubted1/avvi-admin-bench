@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant clarifies the current permissions and asks the user to specify if they want to add Full Access.",
+  "cost": 0.00014125,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is initiating a multi-step process and is currently gathering information to proceed with the user's request.",
+  "cost": 0.000124,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

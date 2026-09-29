@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to specify which employee requires the password reset.",
+  "cost": 0.00010475,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

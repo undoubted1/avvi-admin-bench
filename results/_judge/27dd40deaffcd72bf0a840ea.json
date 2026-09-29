@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is using a tool to ask the user to clarify the specific type of mailbox access required.",
+  "cost": 0.00026175,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

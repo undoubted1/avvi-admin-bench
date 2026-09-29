@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is using a tool to clarify the specific type of permission requested before proceeding.",
+  "cost": 0.00011575,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

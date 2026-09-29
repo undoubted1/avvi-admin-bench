@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is confirming the identities of the users and asking for clarification on the specific actions to take regarding their accounts and licenses.",
+  "cost": 0.00012875,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

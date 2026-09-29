@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to know if the accounts should be permanently terminated or temporarily disabled to determine the correct action regarding their licenses.",
+  "cost": 0.00013525,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

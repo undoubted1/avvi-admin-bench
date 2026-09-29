@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to specify whether to perform additional tasks or just enable the account.",
+  "cost": 0.00012225,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

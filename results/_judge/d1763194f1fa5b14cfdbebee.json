@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which email account the user wants to forward from before it can proceed.",
+  "cost": 0.000128,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

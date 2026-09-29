@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant requires confirmation of the user's identity and specific details regarding mailbox permissions and the auto-reply message before executing the offboarding process.",
+  "cost": 0.00017925,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

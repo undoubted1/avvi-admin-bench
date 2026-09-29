@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the identity of the new hire and clarification on which Sarah to use as a template.",
+  "cost": 0.00013075,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

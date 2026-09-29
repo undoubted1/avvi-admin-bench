@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which user to target because the request is ambiguous.",
+  "cost": 0.00016,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

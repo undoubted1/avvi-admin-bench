@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to specify the level of mailbox access before it can complete the offboarding process.",
+  "cost": 0.0001565,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

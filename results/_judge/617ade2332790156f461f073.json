@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to clarify which specific user the requester is referring to before proceeding with the access change.",
+  "cost": 0.000113,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

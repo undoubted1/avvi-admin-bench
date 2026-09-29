@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs additional information to create the account since the user was not found and specific account details are missing.",
+  "cost": 0.000116,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

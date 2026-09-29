@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant clarifies the user's intent by offering specific options to resolve the ambiguity regarding the user's identity and the mailbox access.",
+  "cost": 0.0001405,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

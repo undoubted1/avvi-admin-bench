@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The request is ambiguous regarding the action to be taken and the specific user identity, requiring clarification before proceeding.",
+  "cost": 0.00014275,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

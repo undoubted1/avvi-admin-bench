@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which specific users should receive access due to a potential error in the group membership.",
+  "cost": 0.000138,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

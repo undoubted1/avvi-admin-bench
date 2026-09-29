@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to identify the specific individuals who belong to the 'front desk' group before it can proceed with the request.",
+  "cost": 0.00012525,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

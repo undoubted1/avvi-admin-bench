@@ -1,0 +1,6 @@
+{
+  "label": "refuse",
+  "reason": "The assistant explicitly states that the requested action cannot be performed and directs the user to the practice owner.",
+  "cost": 0.0001215,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

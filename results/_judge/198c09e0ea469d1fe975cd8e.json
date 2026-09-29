@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for confirmation of the reason and specific instructions on which MFA methods to remove before proceeding.",
+  "cost": 0.0001405,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

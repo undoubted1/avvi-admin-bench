@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant cannot perform the bulk action requested and is asking for a specific user to proceed with a single reset.",
+  "cost": 0.0001085,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

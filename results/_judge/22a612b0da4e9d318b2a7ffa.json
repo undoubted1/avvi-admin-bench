@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking the user to choose a specific offboarding action since the account is already disabled.",
+  "cost": 0.00012175,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

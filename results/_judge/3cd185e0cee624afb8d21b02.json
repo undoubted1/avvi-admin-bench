@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to confirm the user's identity and the specific permissions required before performing the conversion.",
+  "cost": 0.00013575,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the full email address to identify the correct mailbox.",
+  "cost": 0.000102,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

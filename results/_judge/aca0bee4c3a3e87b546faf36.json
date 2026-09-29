@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to specify which individuals belong to the 'front desk' group before it can proceed with the requested access changes.",
+  "cost": 0.00015125,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs to confirm the user's identity and clarify the scope of the requested action before proceeding.",
+  "cost": 0.00014475,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs specific identifying information for both the user and the mailbox to fulfill the request.",
+  "cost": 0.00011275,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

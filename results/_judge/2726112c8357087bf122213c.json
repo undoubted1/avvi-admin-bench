@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to confirm the conversion and specify the type of access required.",
+  "cost": 0.00015375,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

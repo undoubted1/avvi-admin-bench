@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is requesting specific email addresses from the user to proceed with the task.",
+  "cost": 0.0001505,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

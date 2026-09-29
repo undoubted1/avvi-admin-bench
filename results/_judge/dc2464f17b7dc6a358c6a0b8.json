@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the ambiguous request to 'turn off' a user before it can perform any action.",
+  "cost": 0.000123,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

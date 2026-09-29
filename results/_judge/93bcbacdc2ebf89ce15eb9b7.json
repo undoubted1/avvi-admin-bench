@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is initiating the process by searching for the user to identify the device, which is a necessary step before taking action.",
+  "cost": 0.0001225,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

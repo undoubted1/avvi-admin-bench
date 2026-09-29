@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant provides the current information but asks if the user wants to proceed with a more detailed lookup.",
+  "cost": 0.00012,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

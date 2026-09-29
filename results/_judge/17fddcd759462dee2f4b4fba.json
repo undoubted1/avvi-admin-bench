@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the scope of the auto-reply recipients before proceeding with the request.",
+  "cost": 0.00011675,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

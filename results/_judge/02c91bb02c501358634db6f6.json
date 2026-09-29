@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the scope of the out-of-office message recipients before proceeding.",
+  "cost": 0.000135,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

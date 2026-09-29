@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on which Sarah to reference and requires the new hire's details to proceed.",
+  "cost": 0.0001215,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

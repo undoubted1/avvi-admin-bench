@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for clarification on the password reset method and device sign-out preference before proceeding.",
+  "cost": 0.00011475,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

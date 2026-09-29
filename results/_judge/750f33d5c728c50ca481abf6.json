@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user's name or email address to identify the correct account before proceeding.",
+  "cost": 0.0001585,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the specific access levels for the users before proceeding with the request.",
+  "cost": 0.00013175,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the doctor's identity, the specific message content, and the scope of the auto-reply before proceeding.",
+  "cost": 0.000149,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

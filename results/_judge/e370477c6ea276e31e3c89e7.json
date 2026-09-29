@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant provided the requested information and included a polite follow-up offer.",
+  "cost": 0.000114,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

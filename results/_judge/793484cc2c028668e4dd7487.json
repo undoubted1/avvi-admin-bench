@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs clarification on the specific action intended by the user's ambiguous request to 'remove' a user.",
+  "cost": 0.000143,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

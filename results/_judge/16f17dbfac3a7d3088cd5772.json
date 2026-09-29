@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is waiting for the user to confirm which specific security actions to take and to clarify the intent behind the account lockout.",
+  "cost": 0.0001675,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

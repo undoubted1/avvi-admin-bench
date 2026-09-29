@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant confirms the account is already disabled and provides information about its current status.",
+  "cost": 0.0001115,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

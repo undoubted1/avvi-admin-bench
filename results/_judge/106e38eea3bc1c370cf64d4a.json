@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs the user to specify which individuals constitute 'everyone at the front desk' to proceed with the request.",
+  "cost": 0.0001095,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

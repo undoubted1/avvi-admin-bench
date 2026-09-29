@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant needs confirmation of the user's identity and a decision on how to handle the mailbox before proceeding with the account disablement.",
+  "cost": 0.00018775,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

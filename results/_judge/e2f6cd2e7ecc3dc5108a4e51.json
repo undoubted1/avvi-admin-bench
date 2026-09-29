@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is seeking confirmation on the scope of the MFA reset and session revocation before proceeding.",
+  "cost": 0.00012975,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant provided the specific names of the individuals who have access to the requested mailbox.",
+  "cost": 9.825e-05,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant requires clarification on whether the disablement should be temporary or permanent and needs confirmation regarding the transition of responsibilities for the billing manager.",
+  "cost": 0.00021075,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

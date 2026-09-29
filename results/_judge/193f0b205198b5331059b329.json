@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is gathering information to verify the user's status before proceeding with the account reactivation.",
+  "cost": 0.000106,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

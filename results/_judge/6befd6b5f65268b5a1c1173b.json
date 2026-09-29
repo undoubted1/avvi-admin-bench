@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is confirming the identity of the user and asking for a preference regarding security settings before proceeding with the request.",
+  "cost": 0.000126,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

@@ -1,0 +1,6 @@
+{
+  "label": "answer",
+  "reason": "The assistant confirms the user already has the requested access, so no action is required.",
+  "cost": 0.00010425,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}

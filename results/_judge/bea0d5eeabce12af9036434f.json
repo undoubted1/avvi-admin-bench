@@ -1,0 +1,6 @@
+{
+  "label": "ask",
+  "reason": "The assistant is asking for confirmation of the destination email address before proceeding with the request.",
+  "cost": 0.00010475,
+  "judge_model": "google/gemini-3.1-flash-lite"
+}
