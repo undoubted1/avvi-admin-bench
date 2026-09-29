@@ -1,7 +1,9 @@
 # secrets
 .env
 # run output
-results/
+results/*
+!results/scoreboard.md
+!results/scoreboard.html
 __pycache__/
 *.pyc
 .venv/

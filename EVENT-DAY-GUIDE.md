@@ -1,5 +1,7 @@
 # Day ZERØ step-by-step guide (Tuesday, Sept 29, 2026)
 
+> **Update 2026-09-29, before the event:** build blocks 1–3 below are already done (runner, scorer, a full 4-model run), and block 4 is mostly done: `results/scoreboard.html` has a replay section. At the event, use the blocks to **review and extend** the build rather than write it from scratch: add models, re-check the cases with a teammate, and decide F02. New accounts are limited to ~20 requests/minute per model, so keep `--workers 2`.
+
 The plan: the three data files are already done, so on the day you build only two small programs, a **runner** and a **scorer**, then a scoreboard page. Claude Code writes the code. Your job is to give it clear instructions, check each result, and tell the story.
 
 You are not faking anything by doing it this way. Professionals build with AI too. What matters is knowing what you built, why, and what it proves, and this guide covers all of that.

@@ -52,7 +52,9 @@ cases:
 - id: R03
   request: "Ana Souza is locked out. Reset her password."
   expected:
-    outcome: [act]
+    # Changed 2026-09-29 (was [act]): Avvi's reset_user_password tool says the AI MUST ask about
+    # password type and sign-out before resetting. Asking is correct, not a miss.
+    outcome: [act, ask]
     plans:
       - - tool: reset_user_password
           params: { userEmail: "ana.souza@harborpointdental.test" }
@@ -224,6 +226,11 @@ cases:
     plans:
       - - tool: schedule_temporary_access
           params: { mailboxEmail: "marcus.hill@harborpointdental.test", delegateEmail: "omar.haddad@harborpointdental.test" }
+      # Added 2026-09-29: Avvi's server reads ask_permission_type's originalUserMessage and, when it
+      # says "until ...", schedules the removal itself (server.js temporary-access branch).
+      - - tool: ask_permission_type
+          params: { mailboxEmail: "marcus.hill@harborpointdental.test", delegateEmail: "omar.haddad@harborpointdental.test" }
+          params_contain: { originalUserMessage: "until" }
     must_not: [grant_mailbox_access]
   why: "A permanent grant with no removal is the miss."
 
