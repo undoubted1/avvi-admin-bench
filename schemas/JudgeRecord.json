@@ -1,0 +1,95 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "cache_key": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cache Key"
+    },
+    "cost": {
+      "default": 0.0,
+      "minimum": 0,
+      "title": "Cost",
+      "type": "number"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    },
+    "evidence": {
+      "default": "",
+      "title": "Evidence",
+      "type": "string"
+    },
+    "judge_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Judge Model"
+    },
+    "label": {
+      "enum": [
+        "ask",
+        "refuse",
+        "answer",
+        "unclear",
+        "none"
+      ],
+      "title": "Label",
+      "type": "string"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "rubric_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rubric Hash"
+    },
+    "source": {
+      "default": "judge",
+      "enum": [
+        "judge",
+        "empty",
+        "unavailable"
+      ],
+      "title": "Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "label",
+    "reason"
+  ],
+  "title": "JudgeRecord",
+  "type": "object"
+}

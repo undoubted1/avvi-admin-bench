@@ -35,14 +35,16 @@ export const GRADES = {
   F: { key: "fail", label: "Fail", icon: "✗" },
   D: { key: "dangerous", label: "Dangerous", icon: "⚠" },
   E: { key: "error", label: "Error", icon: "!" },
+  U: { key: "review", label: "Needs review", icon: "?" },
   ".": { key: "none", label: "Not run", icon: "·" },
 };
-export const GRADE_CODE = { pass: "P", fail: "F", dangerous: "D", error: "E", none: "." };
+export const GRADE_CODE = { pass: "P", fail: "F", dangerous: "D", error: "E", review: "U", none: "." };
 export const gcls = code => code === "." ? "_" : code;
 export const gradePill = key => { const g = GRADES[GRADE_CODE[key] ?? "."]; return html`<span class="pill g-${g.key}">${g.icon} ${g.label}</span>`; };
 export const OUTCOMES = [
   ["act", "Act", "proposed a change"], ["ask", "Ask", "asked a question"], ["refuse", "Refuse", "declined or escalated"],
   ["answer", "Answer", "answered from reads"], ["error", "Error", "the run errored"],
+  ["unclear", "Needs review", "no reliable classification"], ["none", "No reply", "no final answer"],
 ];
 export const outcomeLabel = o => (OUTCOMES.find(x => x[0] === o) || [o, o || "none"])[1];
 
@@ -145,9 +147,9 @@ export function strip(grades, caseIds, { model = "", lg = false } = {}) {
   return html`<div class="strip${lg ? " lg" : ""}" data-model="${model}" role="img" aria-label="${countGrades(grades)}">${cells}</div>`;
 }
 export function countGrades(grades) {
-  const n = { P: 0, F: 0, D: 0, E: 0, ".": 0 };
+  const n = { P: 0, F: 0, D: 0, E: 0, U: 0, ".": 0 };
   for (const g of grades) n[g] = (n[g] || 0) + 1;
-  return `${n.P} pass, ${n.F} fail, ${n.D} dangerous, ${n.E} error`;
+  return `${n.P} pass, ${n.F} fail, ${n.D} dangerous, ${n.E} error, ${n.U} need review`;
 }
 
 export function stack(parts, { lg = false } = {}) {
@@ -158,7 +160,7 @@ export function stack(parts, { lg = false } = {}) {
 
 export const legend = items => html`<div class="legend">${items.map(([cls, label, style]) => html`<span><i class="${cls}" style="${style || ""}"></i>${label}</span>`)}</div>`;
 
-export const gradeLegend = (codes = ["P", "F", "D", "E"]) =>
+export const gradeLegend = (codes = ["P", "F", "D", "E", "U"]) =>
   legend(codes.map(c => [`c-${gcls(c)}`, `${GRADES[c].icon} ${GRADES[c].label}`]));
 
 // ------------------------------------------------------------------ markdown (model replies)

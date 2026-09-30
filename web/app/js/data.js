@@ -9,7 +9,7 @@ export async function board({ ttl = 2500 } = {}) {
   const o = await api("/api/overview", { ttl });
   if (o._derived) return o;
   const total = o.case_ids.length;
-  o.models.forEach(m => (m.complete = m.cases_run >= total));
+  o.models.forEach(m => (m.complete = m.cases_run >= total && !m.errors && !m.needs_review));
   const ranked = [...o.models].sort((a, b) => b.complete - a.complete || rankCmp(a, b));
   ranked.forEach((m, i) => (m.rank = i + 1));
   // Charts and headline numbers compare like with like: models that ran every case (all models if none have).
@@ -17,9 +17,9 @@ export async function board({ ttl = 2500 } = {}) {
   const caseById = Object.fromEntries(o.cases.map(c => [c.id, c]));
   // Per-case aggregates across every scored model.
   const perCase = o.case_ids.map((id, i) => {
-    const n = { P: 0, F: 0, D: 0, E: 0, ".": 0 };
+    const n = { P: 0, F: 0, D: 0, E: 0, U: 0, ".": 0 };
     for (const m of o.models) n[m.grades[i] || "."]++;
-    const ran = n.P + n.F + n.D + n.E;
+    const ran = n.P + n.F + n.D + n.E + n.U;
     return { id, i, ...caseById[id], n, ran, rate: ran ? (100 * n.P) / ran : null };
   });
   const catMedian = {};

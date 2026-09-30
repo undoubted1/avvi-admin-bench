@@ -1,0 +1,32 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "evidence": {
+      "description": "Exact supporting quote from the assistant reply; empty only for unclear.",
+      "title": "Evidence",
+      "type": "string"
+    },
+    "label": {
+      "enum": [
+        "ask",
+        "refuse",
+        "answer",
+        "unclear"
+      ],
+      "title": "Label",
+      "type": "string"
+    },
+    "reason": {
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "label",
+    "reason",
+    "evidence"
+  ],
+  "title": "JudgeVerdict",
+  "type": "object"
+}

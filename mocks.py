@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-TENANT = json.loads((Path(__file__).parent / "data" / "tenant.json").read_text())
+TENANT = json.loads((Path(__file__).parent / "data" / "tenant.json").read_text(encoding="utf-8"))
 DOMAIN = TENANT["company"]["domain"]
 
 READ_PREFIXES = ("search_", "get_", "list_", "check_", "resolve_")

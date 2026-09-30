@@ -16,6 +16,7 @@ import yaml
 from dotenv import load_dotenv
 
 import mocks
+from schemas import RUNNER_VERSION, RunResult, fingerprint, save_json
 
 ROOT = Path(__file__).parent
 RESULTS = ROOT / "results"
@@ -26,12 +27,22 @@ STOP_TOOLS = {"request_confirmation", "request_multi_confirmation", "ask_permiss
 
 load_dotenv(ROOT / ".env")
 
-SYSTEM_PROMPT = (ROOT / "prompts" / "system.md").read_text()
-CASES = yaml.safe_load((ROOT / "data" / "cases.yaml").read_text())["cases"]
+SYSTEM_PROMPT = (ROOT / "prompts" / "system.md").read_text(encoding="utf-8")
+CASES = yaml.safe_load((ROOT / "data" / "cases.yaml").read_text(encoding="utf-8"))["cases"]
 TOOLS = [
     {"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["input_schema"]}}
-    for t in json.loads((ROOT / "data" / "tools.json").read_text())
+    for t in json.loads((ROOT / "data" / "tools.json").read_text(encoding="utf-8"))
 ]
+
+
+def configuration():
+    return {"runner_version": RUNNER_VERSION, "max_turns": MAX_TURNS, "temperature": 0,
+            "provider": {"require_parameters": True, "data_collection": "deny"}}
+
+
+def input_fingerprint(model, case):
+    return fingerprint({"model": model, "case": case, "system": SYSTEM_PROMPT, "tools": TOOLS,
+                        "tenant": mocks.TENANT, "configuration": configuration()})
 
 
 class BenchError(Exception):
@@ -60,7 +71,7 @@ def total_cost_so_far():
         if f.name.startswith("_"):  # per-model score summaries repeat the case costs
             continue
         try:
-            total += json.loads(f.read_text()).get("cost") or 0
+            total += json.loads(f.read_text(encoding="utf-8")).get("cost") or 0
         except (json.JSONDecodeError, OSError):
             pass
     return total
@@ -109,6 +120,8 @@ def run_case(model, case, on_event=None, out_file=None):
     messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": case["request"]}]
     result = {
         "model": model, "case_id": case["id"], "request": case["request"],
+        "input_fingerprint": input_fingerprint(model, case), "case_snapshot": case,
+        "configuration": configuration(), "response_metadata": [],
         "reads": [], "recorded_calls": [], "final_text": None, "stop_reason": None,
         "usage": {"prompt_tokens": 0, "completion_tokens": 0}, "cost": 0.0,
         "turns": 0, "temperature_zero": True, "error": None,
@@ -133,6 +146,9 @@ def run_case(model, case, on_event=None, out_file=None):
             result["usage"]["completion_tokens"] += usage.get("completion_tokens", 0)
             result["cost"] += usage.get("cost") or 0
             msg = data["choices"][0]["message"]
+            result["response_metadata"].append({"id": data.get("id"), "model": data.get("model"),
+                                                "provider": data.get("provider"),
+                                                "finish_reason": data["choices"][0].get("finish_reason")})
             calls = msg.get("tool_calls") or []
             messages.append({k: v for k, v in msg.items() if k in ("role", "content", "tool_calls")})
             if msg.get("content"):
@@ -168,7 +184,7 @@ def run_case(model, case, on_event=None, out_file=None):
                 messages.append({"role": "tool", "tool_call_id": c["id"], "content": json.dumps(out)})
         else:
             result["stop_reason"] = "max_turns"
-    except (BenchError, requests.RequestException, KeyError, IndexError) as e:
+    except (BenchError, requests.RequestException, KeyError, IndexError, TypeError, ValueError, AttributeError) as e:
         result["error"] = str(e)
         result["stop_reason"] = "error"
         emit("failed", {"text": str(e)})
@@ -176,8 +192,7 @@ def run_case(model, case, on_event=None, out_file=None):
     result["duration_s"] = round(time.time() - start, 2)
     result["messages"] = messages
     out_file = Path(out_file) if out_file else model_dir(model) / f"{case['id']}.json"
-    out_file.parent.mkdir(parents=True, exist_ok=True)
-    out_file.write_text(json.dumps(result, indent=2))
+    result = save_json(out_file, result, RunResult)
     emit("done", {k: result[k] for k in ("case_id", "stop_reason", "cost", "usage", "duration_s", "turns", "error")})
     return result
 

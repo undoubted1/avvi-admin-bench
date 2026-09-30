@@ -261,6 +261,10 @@ a.tile:hover { text-decoration: none; border-color: var(--axis); }
 /* ------------------------------------------------------------------ grade colours for marks */
 .c-P { background: var(--g-pass); } .c-F { background: var(--g-fail); } .c-D { background: var(--g-dangerous); }
 .c-E { background: var(--g-error); } .c-_ { background: var(--g-none); }
+.c-U, .o-unclear, .o-none { background: var(--g-fail); }
+.f-U { fill: var(--g-fail); }
+.pill.g-review { background: var(--gb-error); color: var(--gi-error); }
+.verdict.g-review { border-left: 4px solid var(--g-fail); }
 .f-P { fill: var(--g-pass); } .f-F { fill: var(--g-fail); } .f-D { fill: var(--g-dangerous); } .f-E { fill: var(--g-error); } .f-_ { fill: var(--g-none); }
 .o-act { background: var(--o-act); } .o-ask { background: var(--o-ask); } .o-refuse { background: var(--o-refuse); }
 .o-answer { background: var(--o-answer); } .o-error { background: var(--o-error); } .o-none, .o-unclear { background: var(--o-none); }

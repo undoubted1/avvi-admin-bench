@@ -59,10 +59,13 @@ export async function render(ctx) {
       ${s ? html`
         <div class="verdict g-${grade}">${s.divergence}</div>
         <div class="checks" style="margin-top:10px">
-          ${[["outcome", "Right outcome"], ["plan", "Plan matched"], ["no_dangerous_miss", "Nothing dangerous"]].map(([k, l]) => html`<span class="check ${s.checks?.[k] ? "ok" : "no"}"><b>${s.checks?.[k] ? "✓" : "✗"}</b>${l}</span>`)}
+          ${[["outcome", "Right outcome"], ["plan", "Plan matched"], ["no_dangerous_miss", "Nothing dangerous"], ["valid_actions", "Valid tool arguments"], ["resolved", "Evaluation resolved"]].filter(([k]) => k in (s.checks || {})).map(([k, l]) => html`<span class="check ${s.checks?.[k] ? "ok" : "no"}"><b>${s.checks?.[k] ? "✓" : "✗"}</b>${l}</span>`)}
           <span class="check ${s.skipped_confirmation ? "no" : "ok"}"><b>${s.skipped_confirmation ? "✗" : "✓"}</b>Used a confirmation card</span>
         </div>
         ${s.judge ? html`<p class="small ink2" style="margin:12px 0 0"><b>Judge (${s.judge.judge_model || "judge"}):</b> ${outcomeLabel(s.judge.label)}. ${s.judge.reason}</p>` : ""}
+        ${s.judge?.evidence ? html`<blockquote>${s.judge.evidence}</blockquote>` : ""}
+        ${s.warnings?.map(w => html`<p class="small muted">${w}</p>`)}
+        <details class="call"><summary>Evaluation details</summary><pre>${pretty({schema_version: s.schema_version || 1, scorer_version: s.scorer_version || "legacy", failure_codes: s.failure_codes || [], input_hash: s.input_hash, evaluation_fingerprint: s.evaluation_fingerprint})}</pre></details>
         ${s.dangerous?.length ? html`<div class="lab">Why it's dangerous</div>${s.dangerous.map(x => html`<div class="step bad">${x}</div>`)}` : ""}
       ` : html`<div class="empty">This run hasn't been scored yet.</div>`}
     </div>

@@ -1,0 +1,444 @@
+{
+  "$defs": {
+    "Action": {
+      "additionalProperties": false,
+      "properties": {
+        "params": {
+          "additionalProperties": true,
+          "title": "Params",
+          "type": "object"
+        },
+        "tool": {
+          "title": "Tool",
+          "type": "string"
+        },
+        "via": {
+          "title": "Via",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool",
+        "params",
+        "via"
+      ],
+      "title": "Action",
+      "type": "object"
+    },
+    "Checks": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmation": {
+          "title": "Confirmation",
+          "type": "boolean"
+        },
+        "no_dangerous_miss": {
+          "title": "No Dangerous Miss",
+          "type": "boolean"
+        },
+        "outcome": {
+          "title": "Outcome",
+          "type": "boolean"
+        },
+        "plan": {
+          "title": "Plan",
+          "type": "boolean"
+        },
+        "resolved": {
+          "title": "Resolved",
+          "type": "boolean"
+        },
+        "valid_actions": {
+          "title": "Valid Actions",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "outcome",
+        "plan",
+        "no_dangerous_miss",
+        "confirmation",
+        "valid_actions",
+        "resolved"
+      ],
+      "title": "Checks",
+      "type": "object"
+    },
+    "JudgeRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cache Key"
+        },
+        "cost": {
+          "default": 0.0,
+          "minimum": 0,
+          "title": "Cost",
+          "type": "number"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error"
+        },
+        "evidence": {
+          "default": "",
+          "title": "Evidence",
+          "type": "string"
+        },
+        "judge_model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Judge Model"
+        },
+        "label": {
+          "enum": [
+            "ask",
+            "refuse",
+            "answer",
+            "unclear",
+            "none"
+          ],
+          "title": "Label",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "rubric_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rubric Hash"
+        },
+        "source": {
+          "default": "judge",
+          "enum": [
+            "judge",
+            "empty",
+            "unavailable"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "reason"
+      ],
+      "title": "JudgeRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "R",
+        "K",
+        "A",
+        "F"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "checks": {
+      "$ref": "#/$defs/Checks"
+    },
+    "cost": {
+      "minimum": 0,
+      "title": "Cost",
+      "type": "number"
+    },
+    "dangerous": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Dangerous",
+      "type": "array"
+    },
+    "divergence": {
+      "title": "Divergence",
+      "type": "string"
+    },
+    "duration_s": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Duration S"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    },
+    "evaluation_fingerprint": {
+      "title": "Evaluation Fingerprint",
+      "type": "string"
+    },
+    "expected_outcome": {
+      "items": {
+        "enum": [
+          "act",
+          "ask",
+          "refuse",
+          "answer",
+          "none",
+          "unclear",
+          "error"
+        ],
+        "type": "string"
+      },
+      "title": "Expected Outcome",
+      "type": "array"
+    },
+    "expected_reads": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Reads",
+      "type": "array"
+    },
+    "extra_writes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Extra Writes",
+      "type": "array"
+    },
+    "failure_codes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Failure Codes",
+      "type": "array"
+    },
+    "final_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Final Text"
+    },
+    "grade": {
+      "enum": [
+        "pass",
+        "fail",
+        "dangerous",
+        "error",
+        "review"
+      ],
+      "title": "Grade",
+      "type": "string"
+    },
+    "input_hash": {
+      "title": "Input Hash",
+      "type": "string"
+    },
+    "judge": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/JudgeRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "needs_review": {
+      "default": false,
+      "title": "Needs Review",
+      "type": "boolean"
+    },
+    "outcome": {
+      "enum": [
+        "act",
+        "ask",
+        "refuse",
+        "answer",
+        "none",
+        "unclear",
+        "error"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "passed": {
+      "title": "Passed",
+      "type": "boolean"
+    },
+    "plan_matched": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Plan Matched"
+    },
+    "plan_notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Plan Notes",
+      "type": "array"
+    },
+    "proposed": {
+      "items": {
+        "$ref": "#/$defs/Action"
+      },
+      "title": "Proposed",
+      "type": "array"
+    },
+    "reads": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Reads",
+      "type": "array"
+    },
+    "request": {
+      "title": "Request",
+      "type": "string"
+    },
+    "review_reasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Review Reasons",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 2,
+      "default": 2,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "scorer_version": {
+      "default": "2.0.0",
+      "title": "Scorer Version",
+      "type": "string"
+    },
+    "skipped_confirmation": {
+      "title": "Skipped Confirmation",
+      "type": "boolean"
+    },
+    "stop_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stop Reason"
+    },
+    "validation_errors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Validation Errors",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "why": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Why"
+    }
+  },
+  "required": [
+    "evaluation_fingerprint",
+    "input_hash",
+    "case_id",
+    "category",
+    "request",
+    "expected_outcome",
+    "proposed",
+    "reads",
+    "expected_reads",
+    "skipped_confirmation",
+    "dangerous",
+    "extra_writes",
+    "plan_notes",
+    "cost",
+    "outcome",
+    "checks",
+    "passed",
+    "grade",
+    "divergence"
+  ],
+  "title": "CaseScore",
+  "type": "object"
+}

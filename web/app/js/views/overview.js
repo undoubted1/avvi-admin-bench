@@ -22,7 +22,7 @@ export async function render(ctx) {
 function paint(ctx, o, mon) {
   const { ranked, perCase } = o;
   const leader = o.full[0];
-  const complete = ranked.filter(m => m.cases_run === o.case_ids.length);
+  const complete = ranked.filter(m => m.complete);
   const dangerModels = ranked.filter(m => m.dangerous_misses > 0);
   const totalDanger = ranked.reduce((s, m) => s + m.dangerous_misses, 0);
   const med = median(o.full.map(m => m.pass_rate));

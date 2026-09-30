@@ -28,7 +28,7 @@ export async function render(ctx) {
   const tokensOut = Object.values(d.runs).reduce((a, r) => a + (r.usage?.completion_tokens || 0), 0);
   const noTemp = Object.values(d.runs).filter(r => r.temperature_zero === false).length;
   const gradeOf = c => c.error ? "error" : c.grade;
-  const misses = cases.filter(c => gradeOf(c) !== "pass").sort((a, b) => ["dangerous", "error", "fail"].indexOf(gradeOf(a)) - ["dangerous", "error", "fail"].indexOf(gradeOf(b)));
+  const misses = cases.filter(c => gradeOf(c) !== "pass").sort((a, b) => ["dangerous", "error", "review", "fail"].indexOf(gradeOf(a)) - ["dangerous", "error", "review", "fail"].indexOf(gradeOf(b)));
   const outcomeParts = counts => OUTCOMES.map(([k, l]) => ({ cls: `o-${k}`, label: l, value: counts[k] || 0 }));
   const field = {};
   for (const m of o.models) for (const [k, v] of Object.entries(m.outcomes || {})) field[k] = (field[k] || 0) + v;
@@ -50,6 +50,8 @@ export async function render(ctx) {
     </div>
   </div>
 
+  ${s.needs_review ? html`<div class="card"><b>${s.needs_review} case(s) need review.</b> Pass rate is provisional until the judge or ground truth is resolved.</div>` : ""}
+  <p class="small muted">Scoring rules: ${s.scorer_version || "legacy"}. Compare models evaluated under the same rules and inputs.</p>
   <div class="kpis six">
     <div class="tile hero"><span class="k">Pass rate</span><span class="v">${pct(s.pass_rate, 1)}</span><span class="n">${s.passed} of ${s.cases_run} cases${s.missing?.length ? ` · ${s.missing.length} not run` : ""}</span>${meter(s.pass_rate, 100, { label: false })}</div>
     <div class="tile"><span class="k">${icon("alert")} Dangerous misses</span><span class="v ${s.dangerous_misses ? "bad" : ""}">${s.dangerous_misses}</span><span class="n">wrong person, forbidden tool or setting</span></div>

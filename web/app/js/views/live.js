@@ -63,7 +63,7 @@ function paint(ctx, m) {
   const spendEl = ctx.main.querySelector("#spend");
   ctx.main.innerHTML = String(html`
   <div class="head"><div class="grow"><div class="eyebrow">Saved results</div><h1>Sweep monitor</h1>
-    <p>Every tool-calling model on OpenRouter, cheapest first, until the $${m.cost_limit} cap. Updates every 5 seconds.</p></div></div>
+    <p>${m.selected ? "Selected tool-calling models" : "Every tool-calling model on OpenRouter, cheapest first"}, until the $${m.cost_limit} cap. Updates every 5 seconds.</p></div></div>
 
   <div class="card state-card">
     <div class="big"><i class="live-dot ${dot}"></i>${label}</div>

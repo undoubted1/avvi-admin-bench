@@ -41,8 +41,10 @@ def list_models():
 def result_summaries():
     out = []
     for f in sorted(bench.RESULTS.glob("*/[A-Z]*.json")):
+        if f.parent.name.startswith("_") or f.stem not in {c["id"] for c in bench.CASES}:
+            continue
         try:
-            r = json.loads(f.read_text())
+            r = json.loads(f.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             continue
         out.append({k: r.get(k) for k in ("model", "case_id", "stop_reason", "cost", "duration_s", "error")}
@@ -79,7 +81,7 @@ class Handler(BaseHTTPRequestHandler):
                 f = bench.model_dir(q.get("model", "")) / f"{q.get('case', '')}.json"
                 if f.resolve().parent.parent != bench.RESULTS.resolve() or not f.exists():
                     return self.send_json({"error": "not found"}, 404)
-                self.send_json(json.loads(f.read_text()))
+                self.send_json(json.loads(f.read_text(encoding="utf-8")))
             elif url.path == "/api/run":
                 self.stream_run(q.get("model", ""), q.get("cases", ""))
             else:

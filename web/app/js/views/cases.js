@@ -53,7 +53,7 @@ function body(ctx, o) {
     const ids = list.map(c => c.id), idx = ids.map(id => o.case_ids.indexOf(id));
     const rows = o.ranked.map(m => ({ model: m.model, grades: idx.map(i => m.grades[i]).join("") }));
     el.innerHTML = String(html`<div class="card"><div class="card-h"><div><h2>Every model × every case</h2><p>Rows ranked by pass rate. Tap a name for the model, a case id for the case, a cell for the transcript.</p></div></div>
-      <div style="margin-bottom:10px">${gradeLegend(["P", "F", "D", "E", "."])}</div><div class="matrix-wrap"><div id="matrix"></div></div></div>`);
+      <div style="margin-bottom:10px">${gradeLegend(["P", "F", "D", "E", "U", "."])}</div><div class="matrix-wrap"><div id="matrix"></div></div></div>`);
     stopMatrix = heatMatrix(el.querySelector("#matrix"), rows, ids, o.caseById, {
       onCell: (m, id, g) => g !== "." && ctx.go(`#/run/${enc(m)}/${id}`), onRow: m => ctx.go(`#/model/${enc(m)}`), onCol: id => ctx.go(`#/case/${id}`),
     });
@@ -67,7 +67,7 @@ function body(ctx, o) {
         <div class="t2">Expected: ${c.expected_outcome.join(" or ")}${c.ran ? html` · ${c.ran} models ran it` : ""}</div>
         ${c.ran ? html`<div style="margin-top:8px;max-width:520px">${stack([
           { cls: "c-P", label: "Pass", value: c.n.P }, { cls: "c-F", label: "Fail", value: c.n.F },
-          { cls: "c-D", label: "Dangerous", value: c.n.D }, { cls: "c-E", label: "Error", value: c.n.E }])}</div>` : ""}
+          { cls: "c-D", label: "Dangerous", value: c.n.D }, { cls: "c-E", label: "Error", value: c.n.E }, { cls: "c-U", label: "Needs review", value: c.n.U }])}</div>` : ""}
       </span>
       <span class="side-v"><b>${c.rate == null ? "–" : pct(c.rate)}</b><small>passed</small>${c.n.D ? html`<small class="bad">⚠ ${c.n.D}</small>` : ""}</span>
     </a>`)}</div></div><div style="margin-top:10px">${gradeLegend()}</div>`) : `<div class="card empty"><b>No cases match.</b></div>`;

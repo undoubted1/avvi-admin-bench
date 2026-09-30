@@ -1,3 +1,5 @@
 requests
 pyyaml
 python-dotenv
+pydantic>=2.10,<3
+jsonschema>=4.23,<5

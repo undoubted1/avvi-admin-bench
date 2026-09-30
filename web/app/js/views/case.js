@@ -11,7 +11,7 @@ export async function render(ctx) {
   if (!ctx.alive()) return;
   const c = d.case, exp = c.expected || {}, runs = d.runs;
   ctx.setTitle(id, CATS[c.category], { back: "#/cases" });
-  const n = { pass: 0, fail: 0, dangerous: 0, error: 0 };
+  const n = { pass: 0, fail: 0, dangerous: 0, error: 0, review: 0 };
   runs.forEach(r => n[r.grade]++);
   const outcomes = {};
   runs.forEach(r => (outcomes[r.outcome] = (outcomes[r.outcome] || 0) + 1));
@@ -60,8 +60,8 @@ export async function render(ctx) {
     <div class="card">
       <div class="card-h"><div><h2>How models did</h2><p>${runs.length} models</p></div></div>
       ${runs.length ? html`
-        ${stack([{ cls: "c-P", label: "Pass", value: n.pass }, { cls: "c-F", label: "Fail", value: n.fail }, { cls: "c-D", label: "Dangerous", value: n.dangerous }, { cls: "c-E", label: "Error", value: n.error }], { lg: true })}
-        <div style="margin-top:8px">${legend([["c-P", `✓ Pass ${n.pass}`], ["c-F", `✗ Fail ${n.fail}`], ["c-D", `⚠ Dangerous ${n.dangerous}`], ["c-E", `! Error ${n.error}`]])}</div>
+        ${stack([{ cls: "c-P", label: "Pass", value: n.pass }, { cls: "c-F", label: "Fail", value: n.fail }, { cls: "c-D", label: "Dangerous", value: n.dangerous }, { cls: "c-E", label: "Error", value: n.error }, { cls: "c-U", label: "Needs review", value: n.review }], { lg: true })}
+        <div style="margin-top:8px">${legend([["c-P", `✓ Pass ${n.pass}`], ["c-F", `✗ Fail ${n.fail}`], ["c-D", `⚠ Dangerous ${n.dangerous}`], ["c-E", `! Error ${n.error}`], ["c-U", `? Needs review ${n.review}`]])}</div>
         <div class="lab" style="margin-top:18px">What they chose</div>
         <div class="hbars">${OUTCOMES.filter(([k]) => outcomes[k]).map(([k, l, hint]) => html`
           <div class="hbar"><div class="hb-top"><span class="hb-label">${l} <span class="muted">· ${hint}</span>${expectedSet.has(k) ? html` <span class="pill g-pass" style="padding:0 7px">acceptable</span>` : ""}</span><span class="hb-val">${outcomes[k]}</span></div>
@@ -75,13 +75,13 @@ export async function render(ctx) {
   </div>
 
   <div class="section-title"><h2>Every model's answer</h2>
-    <div class="chips" id="gf">${["all", "pass", "fail", "dangerous", "error"].filter(g => g === "all" || n[g]).map(g => html`<button class="chip" type="button" data-g="${g}" aria-pressed="${state.grade === g}">${g === "all" ? "All" : g[0].toUpperCase() + g.slice(1)} <span class="c">${g === "all" ? runs.length : n[g]}</span></button>`)}</div></div>
+    <div class="chips" id="gf">${["all", "pass", "fail", "dangerous", "error", "review"].filter(g => g === "all" || n[g]).map(g => html`<button class="chip" type="button" data-g="${g}" aria-pressed="${state.grade === g}">${g === "all" ? "All" : g[0].toUpperCase() + g.slice(1)} <span class="c">${g === "all" ? runs.length : n[g]}</span></button>`)}</div></div>
   <div class="card flush"><div class="list" id="runs"></div></div>
   `);
 
   const list = () => {
     const rows = runs.filter(r => state.grade === "all" || r.grade === state.grade)
-      .sort((a, b) => ["dangerous", "fail", "error", "pass"].indexOf(a.grade) - ["dangerous", "fail", "error", "pass"].indexOf(b.grade) || (b.model_pass_rate ?? 0) - (a.model_pass_rate ?? 0));
+      .sort((a, b) => ["dangerous", "fail", "error", "review", "pass"].indexOf(a.grade) - ["dangerous", "fail", "error", "review", "pass"].indexOf(b.grade) || (b.model_pass_rate ?? 0) - (a.model_pass_rate ?? 0));
     ctx.main.querySelector("#runs").innerHTML = rows.length ? String(html`${rows.map(r => html`
       <a class="li" href="#/run/${enc(r.model)}/${id}" style="align-items:flex-start">
         <span class="main">

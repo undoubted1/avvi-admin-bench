@@ -20,6 +20,7 @@ import requests
 import bench
 import report
 import score
+from schemas import save_json
 
 MARGIN = 0.50  # stop starting cases this far below the cap, since up to --workers cases are in flight
 SKIPPED = bench.RESULTS / "_skipped.json"
@@ -32,7 +33,7 @@ _reserved = {}  # model -> estimated cost of its in-flight run, so concurrent mo
 def log(msg):
     line = f"{time.strftime('%H:%M:%S')} {msg}"
     print(line, flush=True)
-    with LOG.open("a") as f:
+    with LOG.open("a", encoding="utf-8") as f:
         f.write(line + "\n")
 
 
@@ -62,24 +63,35 @@ def candidate_models():
 
 
 def load_skipped():
-    return json.loads(SKIPPED.read_text()) if SKIPPED.exists() else {}
+    return json.loads(SKIPPED.read_text(encoding="utf-8")) if SKIPPED.exists() else {}
 
 
 def done_cases(model):
     d = bench.model_dir(model)
-    return {c["id"] for c in bench.CASES if (d / f"{c['id']}.json").exists()
-            and not json.loads((d / f"{c['id']}.json").read_text()).get("error")}
+    done = set()
+    for case in bench.CASES:
+        path = d / f"{case['id']}.json"
+        if not path.exists():
+            continue
+        run = json.loads(path.read_text(encoding="utf-8"))
+        if run.get("input_fingerprint") != bench.input_fingerprint(model, case):
+            raise bench.BenchError(f"Saved run {path} has different or missing input provenance. Archive the results directory before a new sweep; use score.py for legacy analysis.")
+        if not run.get("error"):
+            done.add(case["id"])
+    return done
 
 
 def per_case_tokens():
     """Average prompt/completion tokens per case across every finished run (fallback before there are any)."""
     p = c = n = 0
     for f in bench.RESULTS.glob("*/[A-Z]*.json"):
+        if f.parent.name.startswith("_") or f.stem not in {case["id"] for case in bench.CASES}:
+            continue
         try:
-            r = json.loads(f.read_text())
+            r = json.loads(f.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             continue
-        if not r.get("error"):
+        if not r.get("error") and isinstance(r.get("usage"), dict):
             p += r["usage"]["prompt_tokens"]; c += r["usage"]["completion_tokens"]; n += 1
     return (p / n, c / n) if n else (26000, 700)
 
@@ -142,13 +154,15 @@ def main():
     p.add_argument("--only", default="", help="comma-separated model ids; run just these")
     p.add_argument("--workers", type=int, default=3, help="cases in flight per model (rate limit is ~20 req/min per model)")
     p.add_argument("--models-at-once", type=int, default=4)
+    p.add_argument("--judge-mode", choices=("cached", "live", "off"), default="live")
     a = p.parse_args()
 
     models = candidate_models()
     meta = {m["id"]: m for m in models}
-    (bench.RESULTS / "_models.json").write_text(json.dumps(models, indent=2))
+    save_json(bench.RESULTS / "_models.json", models)
     order = [x.strip() for x in a.only.split(",") if x.strip()] or \
         ([a.first] if a.first else []) + [m["id"] for m in models if m["id"] != a.first]
+    save_json(bench.RESULTS / "_plan.json", {"models": order, "selected": bool(a.only)})
     skipped = load_skipped()
     log(f"Plan: {len(order)} models, spent so far ${bench.total_cost_so_far():.2f} of ${bench.COST_LIMIT:.0f}")
 
@@ -165,12 +179,12 @@ def main():
             status = f"skipped:{e}"
         with _lock:
             if status.startswith("not_run:"):
-                not_run = json.loads(NOT_RUN.read_text()) if NOT_RUN.exists() else {}
+                not_run = json.loads(NOT_RUN.read_text(encoding="utf-8")) if NOT_RUN.exists() else {}
                 not_run[model] = status.split(":", 1)[1]
                 NOT_RUN.write_text(json.dumps(not_run, indent=2))
                 log(f"  NOT RUN {model}: {not_run[model]}")
             elif NOT_RUN.exists():
-                not_run = json.loads(NOT_RUN.read_text())
+                not_run = json.loads(NOT_RUN.read_text(encoding="utf-8"))
                 if not_run.pop(model, None) is not None:
                     NOT_RUN.write_text(json.dumps(not_run, indent=2))
             if status.startswith("skipped:"):
@@ -178,7 +192,7 @@ def main():
                 SKIPPED.write_text(json.dumps(skipped, indent=2))
                 log(f"  SKIPPED {model}: {skipped[model]}")
             if any(bench.model_dir(model).glob("[A-Z]*.json")):
-                s = score.score_model(model)
+                s = score.score_model(model, judge_mode=a.judge_mode)
                 log(f"  done {model}: pass {s['passed']}/{s['cases_run']} ({s['pass_rate']}%), dangerous {s['dangerous_misses']}, "
                     f"cost ${s['cost']:.4f}; total ${bench.total_cost_so_far():.2f}")
                 report.build()

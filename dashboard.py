@@ -2,7 +2,8 @@
 
 Reads what the runner and scorer already wrote: results/<model>/_score.json, the raw
 results/<model>/<case>.json runs, results/_models.json, results/_skipped.json and
-results/_progress.log. It never calls a model and never writes anything.
+results/_progress.log. Live console requests also run and score models, saving
+their history separately in results/_live/.
 
 Preview on another port:  python dashboard.py --port 8010
 """
@@ -18,12 +19,13 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import bench
+from schemas import RunResult, save_json
 
 APP_DIR = bench.ROOT / "web" / "app"
 LIVE = bench.RESULTS / "_live"  # live runs from the web app; never overwrites the sweep's saved results
 CATEGORIES = {"R": "Routine", "K": "Risky", "A": "Ambiguous", "F": "Refuse / escalate"}
 CASE_IDS = [c["id"] for c in bench.CASES]
-GRADE_CODE = {"pass": "P", "fail": "F", "dangerous": "D", "error": "E"}
+GRADE_CODE = {"pass": "P", "fail": "F", "dangerous": "D", "error": "E", "review": "U"}
 FINAL_TEXT_LIMIT = 700
 LOG_TAIL = 400
 LIVE_MAX_MODELS = 25        # models per live request
@@ -47,7 +49,7 @@ def _load(path, pick=None):
     if hit and hit[0] == st.st_mtime and hit[1] == st.st_size:
         return hit[2]
     try:
-        data = json.loads(path.read_text())
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
     value = pick(data) if pick else data
@@ -133,6 +135,8 @@ def _model_row(s, prices, mtime):
         "cases_run": s.get("cases_run", 0), "passed": s.get("passed", 0), "pass_rate": s.get("pass_rate", 0.0),
         "by_category": s.get("by_category", {}), "dangerous_misses": s.get("dangerous_misses", 0),
         "skipped_confirmations": s.get("skipped_confirmations", 0), "errors": s.get("errors", 0),
+        "needs_review": s.get("needs_review", 0), "scorer_version": s.get("scorer_version", "legacy"),
+        "evaluation_fingerprint": s.get("evaluation_fingerprint"),
         "cost": s.get("cost", 0.0), "judge_cost": s.get("judge_cost", 0.0), "avg_duration_s": s.get("avg_duration_s"),
         "grades": grades, "outcomes": outcomes, "scored_at": mtime, "tokens_per_case": _tokens_per_case(s["model"]),
     }
@@ -228,7 +232,7 @@ LOG_LINE = re.compile(r"^(\d\d:\d\d:\d\d) (.*)$")
 def _parse_log():
     f = bench.RESULTS / "_progress.log"
     try:
-        lines = f.read_text(errors="replace").splitlines()
+        lines = f.read_text(encoding="utf-8", errors="replace").splitlines()
         log_mtime = f.stat().st_mtime
     except OSError:
         return {"events": [], "spend": [], "state": "idle", "log_mtime": None, "plan": None}
@@ -293,12 +297,16 @@ def monitor():
         if s:
             m |= {"pass_rate": s.get("pass_rate"), "passed": s.get("passed"), "cases_run": s.get("cases_run"),
                   "dangerous_misses": s.get("dangerous_misses")}
-    order = list(prices)
+    saved_plan = _load(bench.RESULTS / "_plan.json") or {}
+    order = saved_plan.get("models") if isinstance(saved_plan.get("models"), list) else list(prices)
+    selected = bool(saved_plan.get("selected"))
+    planned = set(order)
+    skipped = {model: reason for model, reason in skipped.items() if model in planned}
     return {
         "now": now, "state": log["state"], "plan": log["plan"], "log_mtime": log["log_mtime"],
-        "planned": len(order), "order": order, "total_cost": round(total_cost(), 6),
+        "planned": len(order), "order": order, "selected": selected, "total_cost": round(total_cost(), 6),
         "cost_limit": bench.COST_LIMIT, "cases_per_model": len(CASE_IDS),
-        "models": sorted(dirs.values(), key=lambda m: -(m["last_activity"] or 0)),
+        "models": sorted((m for m in dirs.values() if m["model"] in planned), key=lambda m: -(m["last_activity"] or 0)),
         "skipped": skipped, "events": log["events"], "spend": log["spend"],
     }
 
@@ -393,9 +401,9 @@ def stream_live(handler, models, case_ids):
                 out = LIVE / f"{stamp}__{safe}__{case['id']}.json"
                 r = bench.run_case(model, case, on_event=lambda ev, d: send(ev, d | {"model": model}), out_file=out)
                 try:
-                    sc = score.score_case(case, r)
+                    sc = score.score_case(case, r, judge_mode="live")
                     r["score"] = sc
-                    out.write_text(json.dumps(r, indent=2))
+                    save_json(out, r, RunResult)
                     send("scored", {"model": model, "case_id": case["id"], "id": out.stem, "grade": "error" if sc["error"] else sc["grade"],
                                     "outcome": sc["outcome"], "divergence": sc["divergence"], "cost": r["cost"]})
                 except Exception as e:  # scoring is a bonus; the run itself is saved either way
